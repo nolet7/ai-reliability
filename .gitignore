@@ -28,3 +28,6 @@ servicenow/*credential*.sh
 
 # Logs
 *.log
+
+# CI report outputs
+ci-reports/

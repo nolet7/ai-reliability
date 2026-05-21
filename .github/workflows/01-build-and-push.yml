@@ -1,0 +1,284 @@
+name: 01 - Enterprise Build and Push
+
+on:
+  workflow_dispatch:
+    inputs:
+      push_image:
+        description: "Push image to Docker Hub"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - ".github/workflows/01-build-and-push.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enterprise-build-push-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REPORT_DIR: ci-reports/build-and-push
+  LOCAL_IMAGE_TAG: ci-local
+
+jobs:
+  enterprise-build-and-push:
+    name: Enterprise Build, Validate, Report, and Push
+    runs-on: ubuntu-latest
+    environment: poc
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create report directory
+        run: |
+          mkdir -p "$REPORT_DIR"
+
+      - name: Validate required repository variables
+        run: |
+          required_vars=(
+            "APP_NAME"
+            "DOCKER_IMAGE"
+            "IMAGE_TAG"
+            "EXPECTED_MODEL_VERSION"
+          )
+
+          for var_name in "${required_vars[@]}"; do
+            case "$var_name" in
+              APP_NAME) value="${{ vars.APP_NAME }}" ;;
+              DOCKER_IMAGE) value="${{ vars.DOCKER_IMAGE }}" ;;
+              IMAGE_TAG) value="${{ vars.IMAGE_TAG }}" ;;
+              EXPECTED_MODEL_VERSION) value="${{ vars.EXPECTED_MODEL_VERSION }}" ;;
+            esac
+
+            if [ -z "$value" ]; then
+              echo "Missing repository variable: $var_name"
+              exit 1
+            fi
+
+            echo "Variable present: $var_name"
+          done
+
+      - name: Validate required Docker Hub secrets
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [ -z "$DOCKERHUB_USERNAME" ]; then
+            echo "Missing DOCKERHUB_USERNAME"
+            exit 1
+          fi
+
+          if [ -z "$DOCKERHUB_TOKEN" ]; then
+            echo "Missing DOCKERHUB_TOKEN"
+            exit 1
+          fi
+
+          echo "Docker Hub secrets are present."
+
+      - name: Capture build context report
+        run: |
+          {
+            echo "# Build Context Report"
+            echo
+            echo "Repository: $GITHUB_REPOSITORY"
+            echo "Branch/Ref: $GITHUB_REF"
+            echo "Commit: $GITHUB_SHA"
+            echo "Actor: $GITHUB_ACTOR"
+            echo "Run ID: $GITHUB_RUN_ID"
+            echo "Workflow: $GITHUB_WORKFLOW"
+            echo "App Name: ${{ vars.APP_NAME }}"
+            echo "Docker Image: ${{ vars.DOCKER_IMAGE }}"
+            echo "Image Tag: ${{ vars.IMAGE_TAG }}"
+            echo "Expected Model Version: ${{ vars.EXPECTED_MODEL_VERSION }}"
+            echo
+            echo "Generated at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > "$REPORT_DIR/build-context.md"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r app/requirements.txt
+          pip freeze | sort > "$REPORT_DIR/python-freeze.txt"
+
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile app/main.py
+          echo "Python syntax validation passed." > "$REPORT_DIR/python-syntax-report.txt"
+
+      - name: Validate Python dependencies
+        run: |
+          pip check | tee "$REPORT_DIR/pip-check-report.txt"
+
+      - name: Validate required application files
+        run: |
+          test -f app/Dockerfile
+          test -f app/requirements.txt
+          test -f app/main.py
+
+          {
+            echo "# Required File Validation"
+            echo
+            echo "- app/Dockerfile: present"
+            echo "- app/requirements.txt: present"
+            echo "- app/main.py: present"
+          } > "$REPORT_DIR/required-files-report.md"
+
+      - name: Application import smoke test
+        run: |
+          python - <<'PY' | tee "$REPORT_DIR/app-import-smoke-test.txt"
+          import app.main as m
+
+          print("SERVICE_NAME=", m.SERVICE_NAME)
+          print("MODEL_NAME=", m.MODEL_NAME)
+          print("MODEL_VERSION=", m.MODEL_VERSION)
+          print("OTEL_ENABLED=", m.OTEL_ENABLED)
+          PY
+
+      - name: Log in to Docker Hub
+        if: ${{ github.event_name == 'push' || github.event.inputs.push_image == 'true' }}
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build local Docker image for smoke testing
+        run: |
+          docker build \
+            -t "${{ vars.DOCKER_IMAGE }}:${LOCAL_IMAGE_TAG}" \
+            -f app/Dockerfile .
+
+      - name: Inspect local Docker image
+        run: |
+          docker image inspect "${{ vars.DOCKER_IMAGE }}:${LOCAL_IMAGE_TAG}" > "$REPORT_DIR/docker-image-inspect.json"
+
+          docker images "${{ vars.DOCKER_IMAGE }}:${LOCAL_IMAGE_TAG}" > "$REPORT_DIR/docker-images-report.txt"
+
+      - name: Run container smoke test
+        run: |
+          docker run --rm "${{ vars.DOCKER_IMAGE }}:${LOCAL_IMAGE_TAG}" \
+            python -c "import app.main as m; print(m.SERVICE_NAME); print(m.MODEL_NAME); print(m.MODEL_VERSION); print(m.OTEL_ENABLED)" \
+            | tee "$REPORT_DIR/container-smoke-test.txt"
+
+      - name: Generate image tag report
+        id: image_tag_report
+        run: |
+          SHORT_SHA="$(echo "$GITHUB_SHA" | cut -c1-12)"
+          CANONICAL_IMAGE="${{ vars.DOCKER_IMAGE }}:${{ vars.IMAGE_TAG }}"
+          SHA_IMAGE="${{ vars.DOCKER_IMAGE }}:sha-${SHORT_SHA}"
+
+          {
+            echo "SHORT_SHA=${SHORT_SHA}"
+            echo "CANONICAL_IMAGE=${CANONICAL_IMAGE}"
+            echo "SHA_IMAGE=${SHA_IMAGE}"
+          } | tee "$REPORT_DIR/image-tags.env"
+
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "canonical_image=${CANONICAL_IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "sha_image=${SHA_IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Tag Docker image
+        run: |
+          source "$REPORT_DIR/image-tags.env"
+
+          docker tag "${{ vars.DOCKER_IMAGE }}:${LOCAL_IMAGE_TAG}" "$CANONICAL_IMAGE"
+          docker tag "${{ vars.DOCKER_IMAGE }}:${LOCAL_IMAGE_TAG}" "$SHA_IMAGE"
+
+          {
+            echo "# Docker Tag Report"
+            echo
+            echo "Canonical image: $CANONICAL_IMAGE"
+            echo "SHA image: $SHA_IMAGE"
+          } > "$REPORT_DIR/docker-tag-report.md"
+
+      - name: Push Docker image
+        if: ${{ github.event_name == 'push' || github.event.inputs.push_image == 'true' }}
+        run: |
+          source "$REPORT_DIR/image-tags.env"
+
+          docker push "$CANONICAL_IMAGE" | tee "$REPORT_DIR/docker-push-canonical.log"
+          docker push "$SHA_IMAGE" | tee "$REPORT_DIR/docker-push-sha.log"
+
+      - name: Capture pushed image digest
+        if: ${{ github.event_name == 'push' || github.event.inputs.push_image == 'true' }}
+        run: |
+          source "$REPORT_DIR/image-tags.env"
+
+          docker buildx imagetools inspect "$CANONICAL_IMAGE" > "$REPORT_DIR/image-digest-report.txt"
+
+      - name: Generate enterprise build report
+        run: |
+          source "$REPORT_DIR/image-tags.env"
+
+          {
+            echo "# Enterprise Build and Push Report"
+            echo
+            echo "## Status"
+            echo
+            echo "Build and validation completed successfully."
+            echo
+            echo "## Application"
+            echo
+            echo "- App name: ${{ vars.APP_NAME }}"
+            echo "- Expected model version: ${{ vars.EXPECTED_MODEL_VERSION }}"
+            echo
+            echo "## Image"
+            echo
+            echo "- Canonical image: $CANONICAL_IMAGE"
+            echo "- SHA image: $SHA_IMAGE"
+            echo "- Local validation image: ${{ vars.DOCKER_IMAGE }}:${LOCAL_IMAGE_TAG}"
+            echo
+            echo "## Controls Completed"
+            echo
+            echo "- Repository variables validated"
+            echo "- Docker Hub secrets validated"
+            echo "- Python dependencies installed"
+            echo "- Python syntax validated"
+            echo "- pip dependency check completed"
+            echo "- App import smoke test completed"
+            echo "- Docker image built"
+            echo "- Docker image inspected"
+            echo "- Container smoke test completed"
+            echo "- Docker image tagged"
+            echo "- Docker image push attempted when enabled"
+            echo
+            echo "## Reports Generated"
+            echo
+            echo "- build-context.md"
+            echo "- python-freeze.txt"
+            echo "- pip-check-report.txt"
+            echo "- app-import-smoke-test.txt"
+            echo "- docker-image-inspect.json"
+            echo "- docker-images-report.txt"
+            echo "- container-smoke-test.txt"
+            echo "- docker-tag-report.md"
+            echo "- image-digest-report.txt when image push is enabled"
+            echo
+            echo "Generated at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > "$REPORT_DIR/enterprise-build-report.md"
+
+      - name: Write GitHub job summary
+        run: |
+          cat "$REPORT_DIR/enterprise-build-report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload CI reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: enterprise-build-and-push-reports
+          path: ci-reports/
+          retention-days: 14
