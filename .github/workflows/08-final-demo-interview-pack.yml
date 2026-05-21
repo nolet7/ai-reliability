@@ -1,0 +1,81 @@
+name: 08 - Final Demo Interview Pack
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_model_version:
+        description: "Expected model version"
+        required: false
+        default: "v1.0.3"
+      public_base_url:
+        description: "Public base URL"
+        required: false
+        default: "http://139.144.255.92"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  final-demo-interview-pack:
+    name: Generate final demo and interview pack
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_NAME: AS AI Reliability POC
+      APP_NAME: ${{ vars.APP_NAME }}
+      NAMESPACE: ${{ vars.NAMESPACE }}
+      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+      ISTIO_INGRESS_IP: ${{ vars.ISTIO_INGRESS_IP }}
+      APP_LOADBALANCER_IP: ${{ vars.APP_LOADBALANCER_IP }}
+      EXPECTED_MODEL_VERSION: ${{ inputs.expected_model_version }}
+      PUBLIC_BASE_URL: ${{ inputs.public_base_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Normalize final pack variables
+        run: |
+          if [ -z "${APP_NAME:-}" ]; then
+            echo "APP_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${NAMESPACE:-}" ]; then
+            echo "NAMESPACE=ai-reliability-poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ENVIRONMENT:-}" ]; then
+            echo "ENVIRONMENT=poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ISTIO_INGRESS_IP:-}" ]; then
+            echo "ISTIO_INGRESS_IP=139.144.255.92" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${APP_LOADBALANCER_IP:-}" ]; then
+            echo "APP_LOADBALANCER_IP=139.144.255.192" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${EXPECTED_MODEL_VERSION:-}" ]; then
+            echo "EXPECTED_MODEL_VERSION=v1.0.3" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${PUBLIC_BASE_URL:-}" ]; then
+            echo "PUBLIC_BASE_URL=http://139.144.255.92" >> "$GITHUB_ENV"
+          fi
+
+      - name: Generate final demo interview pack
+        run: |
+          chmod +x scripts/reports/generate_final_demo_interview_pack.sh
+          scripts/reports/generate_final_demo_interview_pack.sh
+
+      - name: Publish final demo summary
+        run: |
+          cat reports/final-demo-pack/as-ai-reliability-final-demo-pack.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload final demo interview pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-9-final-demo-interview-pack
+          path: reports/final-demo-pack/
