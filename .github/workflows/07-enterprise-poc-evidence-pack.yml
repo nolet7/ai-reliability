@@ -1,0 +1,125 @@
+name: 07 - Enterprise POC Evidence Pack
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_model_version:
+        description: "Expected model version"
+        required: false
+        default: "v1.0.3"
+      public_base_url:
+        description: "Public base URL for validation"
+        required: false
+        default: "http://139.144.255.92"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  enterprise-evidence-pack:
+    name: Generate enterprise POC evidence pack
+    runs-on: ubuntu-latest
+
+    env:
+      KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+
+      NAMESPACE: ${{ vars.NAMESPACE }}
+      APP_NAME: ${{ vars.APP_NAME }}
+      SERVICE_NAME: ${{ vars.SERVICE_NAME }}
+      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+      KUBE_CONTEXT: ${{ vars.KUBE_CONTEXT }}
+
+      ISTIO_INGRESS_IP: ${{ vars.ISTIO_INGRESS_IP }}
+      APP_LOADBALANCER_IP: ${{ vars.APP_LOADBALANCER_IP }}
+
+      EXPECTED_MODEL_VERSION: ${{ inputs.expected_model_version }}
+      PUBLIC_BASE_URL: ${{ inputs.public_base_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+
+      - name: Install evidence tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl python3
+
+      - name: Normalize evidence pack variables
+        run: |
+          if [ -z "${NAMESPACE:-}" ]; then
+            echo "NAMESPACE=ai-reliability-poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${APP_NAME:-}" ]; then
+            echo "APP_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICE_NAME:-}" ]; then
+            echo "SERVICE_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ENVIRONMENT:-}" ]; then
+            echo "ENVIRONMENT=poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${KUBE_CONTEXT:-}" ]; then
+            echo "KUBE_CONTEXT=lke605802-ctx" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ISTIO_INGRESS_IP:-}" ]; then
+            echo "ISTIO_INGRESS_IP=139.144.255.92" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${APP_LOADBALANCER_IP:-}" ]; then
+            echo "APP_LOADBALANCER_IP=139.144.255.192" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${EXPECTED_MODEL_VERSION:-}" ]; then
+            echo "EXPECTED_MODEL_VERSION=v1.0.3" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${PUBLIC_BASE_URL:-}" ]; then
+            echo "PUBLIC_BASE_URL=http://139.144.255.92" >> "$GITHUB_ENV"
+          fi
+
+      - name: Decode kubeconfig
+        run: |
+          if [ -z "${KUBECONFIG_B64:-}" ]; then
+            echo "KUBECONFIG_B64 secret is missing."
+            exit 1
+          fi
+
+          mkdir -p "$HOME/.kube"
+          printf "%s" "$KUBECONFIG_B64" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+          kubectl config get-contexts
+          kubectl config use-context "$KUBE_CONTEXT"
+          kubectl cluster-info
+
+      - name: Generate enterprise POC evidence pack
+        run: |
+          chmod +x scripts/reports/generate_enterprise_poc_evidence_pack.sh
+          scripts/reports/generate_enterprise_poc_evidence_pack.sh
+
+      - name: Publish enterprise evidence summary
+        if: always()
+        run: |
+          if [ -f reports/enterprise-poc-evidence/as-ai-reliability-enterprise-evidence.md ]; then
+            cat reports/enterprise-poc-evidence/as-ai-reliability-enterprise-evidence.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Enterprise evidence report was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload enterprise POC evidence pack
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-8-enterprise-poc-evidence-pack
+          path: reports/enterprise-poc-evidence/
