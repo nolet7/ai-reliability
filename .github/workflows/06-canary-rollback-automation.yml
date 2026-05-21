@@ -117,7 +117,7 @@ jobs:
           fi
 
           if [ -z "${ROUTE_TEST_PATH:-}" ]; then
-            echo "ROUTE_TEST_PATH=/model" >> "$GITHUB_ENV"
+            echo "ROUTE_TEST_PATH=/version" >> "$GITHUB_ENV"
           fi
 
           if [ -z "${CANARY_TOLERANCE_PERCENT:-}" ]; then
