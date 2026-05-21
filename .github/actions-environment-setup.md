@@ -162,3 +162,48 @@ python -m py_compile app/main.py
 - [ ] Repository variables are created
 - [ ] Local script syntax validation passes
 - [ ] Release gate workflow is passing
+
+---
+
+## Phase 3 Deployment Automation Additions
+
+### Additional Repository Variables
+
+DB_HOST=as-ai-postgres-poc
+
+DB_PORT=5432
+
+DB_NAME=as_ai_poc
+
+APP_CONTAINER_PORT=8000
+
+### Additional Repository Secrets
+
+DB_USER
+
+DB_PASSWORD
+
+### Deployment Workflow
+
+Active workflow:
+
+.github/workflows/02-deploy-poc.yml
+
+Purpose:
+
+- Deploys the application to the POC Kubernetes cluster
+- Creates Kubernetes secrets from GitHub Secrets
+- Applies Kubernetes manifests
+- Applies Istio rollback baseline routing
+- Keeps canary v2 scaled to 0 by default
+- Validates rollout health
+- Runs LoadBalancer smoke tests
+- Uploads deployment evidence reports
+
+### Enterprise Notes
+
+The workflow does not commit real Kubernetes Secret manifests.
+
+Database credentials, Dynatrace token values, and kubeconfig are injected from GitHub Actions secrets.
+
+NetworkPolicy is disabled by default because Istio sidecar readiness must be validated before enforcing restrictive pod network policies.

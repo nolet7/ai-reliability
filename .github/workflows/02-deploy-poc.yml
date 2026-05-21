@@ -1,0 +1,437 @@
+name: 02 - Enterprise Deploy to POC Kubernetes
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply_istio:
+        description: "Apply Istio Gateway, DestinationRule, and rollback route"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+      apply_network_policy:
+        description: "Apply NetworkPolicy"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+      run_smoke_tests:
+        description: "Run post-deployment smoke tests"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+  push:
+    branches:
+      - main
+    paths:
+      - "k8s/**"
+      - "istio/**"
+      - ".github/workflows/02-deploy-poc.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enterprise-deploy-poc-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REPORT_DIR: ci-reports/deploy-poc
+  NAMESPACE: ${{ vars.NAMESPACE }}
+  APP_NAME: ${{ vars.APP_NAME }}
+  DOCKER_IMAGE: ${{ vars.DOCKER_IMAGE }}
+  IMAGE_TAG: ${{ vars.IMAGE_TAG }}
+  K8S_CONTEXT_NAME: ${{ vars.K8S_CONTEXT_NAME }}
+  EXPECTED_MODEL_VERSION: ${{ vars.EXPECTED_MODEL_VERSION }}
+  DB_HOST: ${{ vars.DB_HOST }}
+  DB_PORT: ${{ vars.DB_PORT }}
+  DB_NAME: ${{ vars.DB_NAME }}
+  APP_CONTAINER_PORT: ${{ vars.APP_CONTAINER_PORT }}
+
+jobs:
+  deploy-poc:
+    name: Deploy Application to POC Cluster
+    runs-on: ubuntu-latest
+    environment: poc
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create report directory
+        run: |
+          mkdir -p "$REPORT_DIR"
+
+      - name: Validate required variables
+        run: |
+          required_vars=(
+            "NAMESPACE"
+            "APP_NAME"
+            "DOCKER_IMAGE"
+            "IMAGE_TAG"
+            "K8S_CONTEXT_NAME"
+            "EXPECTED_MODEL_VERSION"
+            "DB_HOST"
+            "DB_PORT"
+            "DB_NAME"
+            "APP_CONTAINER_PORT"
+          )
+
+          for var_name in "${required_vars[@]}"; do
+            value="${!var_name}"
+            if [ -z "$value" ]; then
+              echo "Missing required variable: $var_name"
+              exit 1
+            fi
+            echo "Variable present: $var_name"
+          done
+
+      - name: Validate required secrets
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DT_OTLP_ENDPOINT: ${{ secrets.DT_OTLP_ENDPOINT }}
+          DT_OTLP_TRACES_ENDPOINT: ${{ secrets.DT_OTLP_TRACES_ENDPOINT }}
+          DT_OTLP_HEADERS: ${{ secrets.DT_OTLP_HEADERS }}
+          DT_OTLP_PROTOCOL: ${{ secrets.DT_OTLP_PROTOCOL }}
+        run: |
+          check_secret() {
+            name="$1"
+            value="$2"
+            if [ -z "$value" ]; then
+              echo "Missing secret: $name"
+              exit 1
+            fi
+            echo "Secret present: $name"
+          }
+
+          check_secret "KUBECONFIG_B64" "$KUBECONFIG_B64"
+          check_secret "DB_USER" "$DB_USER"
+          check_secret "DB_PASSWORD" "$DB_PASSWORD"
+          check_secret "DT_OTLP_ENDPOINT" "$DT_OTLP_ENDPOINT"
+          check_secret "DT_OTLP_TRACES_ENDPOINT" "$DT_OTLP_TRACES_ENDPOINT"
+          check_secret "DT_OTLP_HEADERS" "$DT_OTLP_HEADERS"
+          check_secret "DT_OTLP_PROTOCOL" "$DT_OTLP_PROTOCOL"
+
+      - name: Capture deployment context report
+        run: |
+          {
+            echo "# POC Deployment Context Report"
+            echo
+            echo "Repository: $GITHUB_REPOSITORY"
+            echo "Branch/Ref: $GITHUB_REF"
+            echo "Commit: $GITHUB_SHA"
+            echo "Actor: $GITHUB_ACTOR"
+            echo "Run ID: $GITHUB_RUN_ID"
+            echo "Workflow: $GITHUB_WORKFLOW"
+            echo
+            echo "Namespace: $NAMESPACE"
+            echo "Application: $APP_NAME"
+            echo "Docker Image: $DOCKER_IMAGE:$IMAGE_TAG"
+            echo "Kubernetes Context: $K8S_CONTEXT_NAME"
+            echo "Expected Model Version: $EXPECTED_MODEL_VERSION"
+            echo
+            echo "Generated at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > "$REPORT_DIR/deployment-context.md"
+
+      - name: Configure kubeconfig
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+        run: |
+          mkdir -p ~/.kube
+          printf "%s" "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+          kubectl config current-context | tee "$REPORT_DIR/current-context.txt"
+
+          CURRENT_CONTEXT="$(kubectl config current-context)"
+          if [ "$CURRENT_CONTEXT" != "$K8S_CONTEXT_NAME" ]; then
+            echo "Expected context $K8S_CONTEXT_NAME but got $CURRENT_CONTEXT"
+            exit 1
+          fi
+
+      - name: Cluster connectivity preflight
+        run: |
+          {
+            echo "# Cluster Preflight"
+            echo
+            echo "## Nodes"
+            kubectl get nodes -o wide
+            echo
+            echo "## Namespaces"
+            kubectl get ns
+            echo
+            echo "## Istio System"
+            kubectl get pods -n istio-system || true
+          } | tee "$REPORT_DIR/cluster-preflight.txt"
+
+      - name: Validate Kubernetes manifests with client dry-run
+        run: |
+          {
+            echo "# Manifest Dry-Run Report"
+            echo
+            kubectl apply --dry-run=client -f k8s/namespace.yaml
+            kubectl apply --dry-run=client -f k8s/configmap.yaml
+            kubectl apply --dry-run=client -f k8s/serviceaccount.yaml
+            kubectl apply --dry-run=client -f k8s/rbac.yaml
+            kubectl apply --dry-run=client -f k8s/deployment.yaml
+            kubectl apply --dry-run=client -f k8s/deployment-v2.yaml
+            kubectl apply --dry-run=client -f k8s/service.yaml
+          } | tee "$REPORT_DIR/manifest-dry-run.txt"
+
+      - name: Apply namespace and enable Istio injection
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+
+          kubectl label namespace "$NAMESPACE" istio-injection=enabled --overwrite
+
+          kubectl get namespace "$NAMESPACE" --show-labels | tee "$REPORT_DIR/namespace-labels.txt"
+
+      - name: Create Kubernetes database secret from GitHub Secrets
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          kubectl create secret generic "${APP_NAME}-db-secret" \
+            -n "$NAMESPACE" \
+            --from-literal=DB_HOST="$DB_HOST" \
+            --from-literal=DB_PORT="$DB_PORT" \
+            --from-literal=DB_NAME="$DB_NAME" \
+            --from-literal=DB_USER="$DB_USER" \
+            --from-literal=DB_PASSWORD="$DB_PASSWORD" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          echo "Database secret applied: ${APP_NAME}-db-secret" | tee "$REPORT_DIR/db-secret-report.txt"
+
+      - name: Create Dynatrace OTEL secret from GitHub Secrets
+        env:
+          DT_OTLP_ENDPOINT: ${{ secrets.DT_OTLP_ENDPOINT }}
+          DT_OTLP_TRACES_ENDPOINT: ${{ secrets.DT_OTLP_TRACES_ENDPOINT }}
+          DT_OTLP_HEADERS: ${{ secrets.DT_OTLP_HEADERS }}
+          DT_OTLP_PROTOCOL: ${{ secrets.DT_OTLP_PROTOCOL }}
+        run: |
+          kubectl create secret generic dynatrace-otel-secret \
+            -n "$NAMESPACE" \
+            --from-literal=OTEL_EXPORTER_OTLP_ENDPOINT="$DT_OTLP_ENDPOINT" \
+            --from-literal=OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="$DT_OTLP_TRACES_ENDPOINT" \
+            --from-literal=OTEL_EXPORTER_OTLP_HEADERS="$DT_OTLP_HEADERS" \
+            --from-literal=OTEL_EXPORTER_OTLP_TRACES_HEADERS="$DT_OTLP_HEADERS" \
+            --from-literal=OTEL_EXPORTER_OTLP_PROTOCOL="$DT_OTLP_PROTOCOL" \
+            --from-literal=OTEL_EXPORTER_OTLP_TRACES_PROTOCOL="$DT_OTLP_PROTOCOL" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          echo "Dynatrace OTEL secret applied: dynatrace-otel-secret" | tee "$REPORT_DIR/dynatrace-secret-report.txt"
+
+      - name: Apply application Kubernetes manifests
+        run: |
+          {
+            echo "# Kubernetes Apply Report"
+            echo
+            kubectl apply -f k8s/configmap.yaml
+            kubectl apply -f k8s/serviceaccount.yaml
+            kubectl apply -f k8s/rbac.yaml
+            kubectl apply -f k8s/deployment.yaml
+            kubectl apply -f k8s/deployment-v2.yaml
+            kubectl apply -f k8s/service.yaml
+          } | tee "$REPORT_DIR/kubernetes-apply-report.txt"
+
+      - name: Update deployment images from workflow variables
+        run: |
+          kubectl set image deployment/"$APP_NAME" \
+            "$APP_NAME"="$DOCKER_IMAGE:$IMAGE_TAG" \
+            -n "$NAMESPACE"
+
+          kubectl set image deployment/"$APP_NAME-v2" \
+            "$APP_NAME"="$DOCKER_IMAGE:$IMAGE_TAG" \
+            -n "$NAMESPACE"
+
+          {
+            echo "# Image Update Report"
+            echo
+            echo "Stable deployment image: $DOCKER_IMAGE:$IMAGE_TAG"
+            echo "Canary deployment image: $DOCKER_IMAGE:$IMAGE_TAG"
+          } | tee "$REPORT_DIR/image-update-report.md"
+
+      - name: Put deployment in safe rollback mode
+        run: |
+          kubectl scale deployment "$APP_NAME-v2" -n "$NAMESPACE" --replicas=0
+
+          echo "Canary deployment scaled to 0 for safe rollback baseline." | tee "$REPORT_DIR/canary-scale-report.txt"
+
+      - name: Apply Istio baseline routing
+        if: ${{ github.event_name == 'push' || github.event.inputs.apply_istio == 'true' }}
+        run: |
+          kubectl get crd virtualservices.networking.istio.io
+          kubectl get crd destinationrules.networking.istio.io
+          kubectl get crd gateways.networking.istio.io
+
+          {
+            echo "# Istio Apply Report"
+            echo
+            kubectl apply -f istio/gateway.yaml
+            kubectl apply -f istio/destination-rule.yaml
+            kubectl apply -f istio/virtual-service-rollback.yaml
+          } | tee "$REPORT_DIR/istio-apply-report.txt"
+
+      - name: Apply NetworkPolicy only when explicitly requested
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.apply_network_policy == 'true' }}
+        run: |
+          kubectl apply -f k8s/networkpolicy.yaml | tee "$REPORT_DIR/networkpolicy-apply-report.txt"
+
+      - name: Restart stable deployment and wait for rollout
+        run: |
+          kubectl rollout restart deployment/"$APP_NAME" -n "$NAMESPACE"
+          kubectl rollout status deployment/"$APP_NAME" -n "$NAMESPACE" --timeout=240s | tee "$REPORT_DIR/rollout-status.txt"
+
+      - name: Capture workload state
+        if: always()
+        run: |
+          {
+            echo "# Workload State"
+            echo
+            echo "## Deployments"
+            kubectl get deployments -n "$NAMESPACE" -o wide
+            echo
+            echo "## Pods"
+            kubectl get pods -n "$NAMESPACE" -o wide --show-labels
+            echo
+            echo "## Services"
+            kubectl get svc -n "$NAMESPACE" -o wide
+            echo
+            echo "## Istio Objects"
+            kubectl get gateway,destinationrule,virtualservice -n "$NAMESPACE" || true
+          } | tee "$REPORT_DIR/workload-state.txt"
+
+      - name: Wait for LoadBalancer external IP
+        id: service_ip
+        run: |
+          echo "Waiting for service external IP..."
+
+          SERVICE_IP=""
+
+          for i in $(seq 1 60); do
+            SERVICE_IP="$(kubectl get svc "$APP_NAME" -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)"
+
+            if [ -n "$SERVICE_IP" ]; then
+              echo "Service external IP: $SERVICE_IP"
+              break
+            fi
+
+            echo "Waiting for LoadBalancer IP... attempt $i"
+            sleep 5
+          done
+
+          if [ -z "$SERVICE_IP" ]; then
+            echo "No LoadBalancer external IP found."
+            kubectl get svc "$APP_NAME" -n "$NAMESPACE" -o yaml > "$REPORT_DIR/service-yaml-on-failure.yaml"
+            exit 1
+          fi
+
+          echo "service_ip=$SERVICE_IP" >> "$GITHUB_OUTPUT"
+          echo "$SERVICE_IP" > "$REPORT_DIR/service-external-ip.txt"
+
+      - name: Run deployment smoke tests
+        if: ${{ github.event_name == 'push' || github.event.inputs.run_smoke_tests == 'true' }}
+        run: |
+          SERVICE_IP="${{ steps.service_ip.outputs.service_ip }}"
+          BASE_URL="http://${SERVICE_IP}"
+
+          {
+            echo "# Deployment Smoke Test Report"
+            echo
+            echo "Base URL: $BASE_URL"
+            echo
+            echo "## /health/live"
+            curl -sSf "$BASE_URL/health/live"
+            echo
+            echo
+            echo "## /health/ready"
+            curl -sSf "$BASE_URL/health/ready"
+            echo
+            echo
+            echo "## /health/model"
+            curl -sSf "$BASE_URL/health/model" | tee "$REPORT_DIR/health-model-response.json"
+            echo
+            echo
+            echo "## /version"
+            curl -sSf "$BASE_URL/version" | tee "$REPORT_DIR/version-response.json"
+            echo
+          } | tee "$REPORT_DIR/smoke-test-report.md"
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import os
+
+          expected = os.environ["EXPECTED_MODEL_VERSION"]
+
+          data = json.loads(Path("ci-reports/deploy-poc/health-model-response.json").read_text())
+          if data.get("status") != "model_ready":
+              raise SystemExit("health/model did not return model_ready")
+          if data.get("artifact_loaded") is not True:
+              raise SystemExit("artifact_loaded is not true")
+          if data.get("model_version") != expected:
+              raise SystemExit(f"Expected model_version {expected}, got {data.get('model_version')}")
+
+          print("Smoke validation passed.")
+          PY
+
+      - name: Generate deployment summary report
+        if: always()
+        run: |
+          {
+            echo "# Enterprise POC Deployment Report"
+            echo
+            echo "## Deployment Result"
+            echo
+            echo "Workflow completed with status: ${{ job.status }}"
+            echo
+            echo "## Application"
+            echo
+            echo "- App name: $APP_NAME"
+            echo "- Namespace: $NAMESPACE"
+            echo "- Image: $DOCKER_IMAGE:$IMAGE_TAG"
+            echo "- Expected model version: $EXPECTED_MODEL_VERSION"
+            echo
+            echo "## Reports Generated"
+            echo
+            echo "- deployment-context.md"
+            echo "- cluster-preflight.txt"
+            echo "- manifest-dry-run.txt"
+            echo "- namespace-labels.txt"
+            echo "- db-secret-report.txt"
+            echo "- dynatrace-secret-report.txt"
+            echo "- kubernetes-apply-report.txt"
+            echo "- image-update-report.md"
+            echo "- canary-scale-report.txt"
+            echo "- istio-apply-report.txt"
+            echo "- rollout-status.txt"
+            echo "- workload-state.txt"
+            echo "- smoke-test-report.md"
+            echo
+            echo "Generated at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > "$REPORT_DIR/enterprise-deployment-report.md"
+
+      - name: Write GitHub job summary
+        if: always()
+        run: |
+          cat "$REPORT_DIR/enterprise-deployment-report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload deployment reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: enterprise-poc-deployment-reports
+          path: ci-reports/
+          retention-days: 14
