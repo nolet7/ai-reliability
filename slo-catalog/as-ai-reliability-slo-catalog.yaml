@@ -1,0 +1,86 @@
+slo_catalog:
+  project: AS AI Reliability POC
+  app_name: as-ai-quality-service
+  environment: poc
+  expected_model_version: v1.0.3
+
+  slos:
+    - id: runtime_availability
+      name: AI Runtime Availability
+      target_percent: 99.5
+      warning_percent: 99.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=runtime_availability
+      description: Measures live, ready, and version endpoint availability.
+
+    - id: model_health_readiness
+      name: AI Model Health Readiness
+      target_percent: 99.5
+      warning_percent: 99.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=model_health_readiness
+      description: Measures /health/model readiness.
+
+    - id: model_version_compliance
+      name: AI Model Version Compliance
+      target_percent: 100.0
+      warning_percent: 99.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=model_version_compliance
+      description: Confirms runtime responses return the approved model version.
+
+    - id: prediction_success_rate
+      name: AI Prediction Success Rate
+      target_percent: 99.0
+      warning_percent: 98.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=prediction_success_rate
+      description: Measures successful /predict responses.
+
+    - id: prediction_latency_compliance
+      name: AI Prediction Latency Compliance
+      target_percent: 95.0
+      warning_percent: 90.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=prediction_latency_compliance
+      description: Measures percentage of prediction calls under latency threshold.
+
+    - id: canary_route_readiness
+      name: Canary and Rollback Route Readiness
+      target_percent: 100.0
+      warning_percent: 99.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=canary_route_readiness
+      description: Confirms public route returns the expected model version.
+
+    - id: incident_automation_readiness
+      name: ServiceNow Incident Automation Readiness
+      target_percent: 100.0
+      warning_percent: 99.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=incident_automation_readiness
+      description: Confirms ServiceNow incident automation script and workflow exist.
+
+    - id: observability_readiness
+      name: Dynatrace Observability Readiness
+      target_percent: 100.0
+      warning_percent: 99.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=observability_readiness
+      description: Confirms Dynatrace metric ingestion is configured.
+
+    - id: evidence_pack_readiness
+      name: Enterprise Evidence Pack Readiness
+      target_percent: 100.0
+      warning_percent: 99.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=evidence_pack_readiness
+      description: Confirms enterprise evidence workflows exist.
+
+    - id: overall_ai_reliability_score
+      name: Overall AI Reliability Score
+      target_percent: 99.0
+      warning_percent: 95.0
+      dynatrace_metric: asr.ai.slo.value
+      dimension_filter: slo_id=overall_ai_reliability_score
+      description: Composite score across all measured AI reliability SLOs.

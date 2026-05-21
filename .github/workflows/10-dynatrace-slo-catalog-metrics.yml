@@ -1,0 +1,93 @@
+name: 10 - Dynatrace SLO Catalog Metrics
+
+on:
+  workflow_dispatch:
+    inputs:
+      sample_count:
+        description: "Number of prediction samples"
+        required: false
+        default: "10"
+      latency_threshold_ms:
+        description: "Prediction latency compliance threshold in ms"
+        required: false
+        default: "1000"
+
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  publish-slo-catalog-metrics:
+    name: Publish SLO catalog metrics to Dynatrace
+    runs-on: ubuntu-latest
+
+    env:
+      DYNATRACE_ENV_URL: ${{ secrets.DYNATRACE_ENV_URL }}
+      DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
+
+      APP_NAME: ${{ vars.APP_NAME }}
+      SERVICE_NAME: ${{ vars.SERVICE_NAME }}
+      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+      EXPECTED_MODEL_VERSION: ${{ vars.EXPECTED_MODEL_VERSION }}
+      PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+
+      SLO_SAMPLE_COUNT: ${{ inputs.sample_count }}
+      SLO_LATENCY_THRESHOLD_MS: ${{ inputs.latency_threshold_ms }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Normalize SLO metric variables
+        run: |
+          if [ -z "${APP_NAME:-}" ]; then
+            echo "APP_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICE_NAME:-}" ]; then
+            echo "SERVICE_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ENVIRONMENT:-}" ]; then
+            echo "ENVIRONMENT=poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${EXPECTED_MODEL_VERSION:-}" ]; then
+            echo "EXPECTED_MODEL_VERSION=v1.0.3" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${PUBLIC_BASE_URL:-}" ]; then
+            echo "PUBLIC_BASE_URL=http://139.144.255.92" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SLO_SAMPLE_COUNT:-}" ]; then
+            echo "SLO_SAMPLE_COUNT=10" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SLO_LATENCY_THRESHOLD_MS:-}" ]; then
+            echo "SLO_LATENCY_THRESHOLD_MS=1000" >> "$GITHUB_ENV"
+          fi
+
+      - name: Publish SLO catalog metrics to Dynatrace
+        run: |
+          chmod +x scripts/observability/publish_slo_catalog_metrics_to_dynatrace.py
+          python3 scripts/observability/publish_slo_catalog_metrics_to_dynatrace.py
+
+      - name: Publish SLO summary
+        if: always()
+        run: |
+          if [ -f reports/dynatrace-slo-catalog/dynatrace-slo-catalog-summary.md ]; then
+            cat reports/dynatrace-slo-catalog/dynatrace-slo-catalog-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Dynatrace SLO catalog summary was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Dynatrace SLO catalog evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-11-dynatrace-slo-catalog-metrics
+          path: reports/dynatrace-slo-catalog/
