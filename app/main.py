@@ -6,7 +6,7 @@
 # and incident simulation endpoints for Dynatrace, ServiceNow, Atlas, and CI/CD release gates.
 #
 # Service name:
-# asr-ai-quality-service
+# as-ai-quality-service
 #
 # Main SRE reliability endpoints:
 # - /health/live
@@ -43,11 +43,11 @@ from opentelemetry.sdk.trace import TracerProvider
 # These values can later be injected using Kubernetes ConfigMap,
 # environment variables, Helm values, or CI/CD deployment variables.
 
-SERVICE_NAME = os.getenv("SERVICE_NAME", "asr-ai-quality-service")
+SERVICE_NAME = os.getenv("SERVICE_NAME", "as-ai-quality-service")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "poc")
 OWNER = os.getenv("OWNER", "sre-platform-team")
 
-MODEL_NAME = os.getenv("MODEL_NAME", "asr-quality-classifier")
+MODEL_NAME = os.getenv("MODEL_NAME", "as-quality-classifier")
 MODEL_VERSION = os.getenv("MODEL_VERSION", "v1.0.3")
 
 # ARTIFACT_LOADED represents whether the model artifact was loaded successfully.
@@ -78,7 +78,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "").strip
 # ------------------------------------------------------------
 
 app = FastAPI(
-    title="ASR AI Quality Service",
+    title="AS AI Quality Service",
     description="POC AI reliability service with health checks, model visibility, prediction audit, and incident simulation.",
     version="1.0.0",
 )
@@ -102,7 +102,7 @@ def configure_opentelemetry() -> None:
     resource = Resource.create(
         {
             "service.name": SERVICE_NAME,
-            "service.namespace": "asr-ai-reliability",
+            "service.namespace": "as-ai-reliability",
             "deployment.environment": ENVIRONMENT,
             "service.version": MODEL_VERSION,
             "model.name": MODEL_NAME,
@@ -143,7 +143,7 @@ class PredictionRequest(BaseModel):
     asset_id: str = Field(..., example="asset-1001")
 
     # site_id represents the facility, plant, or location.
-    site_id: str = Field(..., example="site-asr-poc-001")
+    site_id: str = Field(..., example="site-as-poc-001")
 
     # sensor_score is a simplified numeric signal used for the POC prediction.
     sensor_score: float = Field(..., ge=0, le=100, example=87.5)
@@ -234,7 +234,7 @@ def root():
     return {
         "service_name": SERVICE_NAME,
         "environment": ENVIRONMENT,
-        "message": "ASR AI Reliability Incident Automation POC service is running",
+        "message": "AS AI Reliability Incident Automation POC service is running",
         "available_endpoints": [
             "/health/live",
             "/health/ready",
@@ -356,20 +356,20 @@ def predict(payload: PredictionRequest, x_trace_id: Optional[str] = Header(defau
     # It generates request_id, trace_id, model metadata, and audit evidence.
     #
     # OpenTelemetry:
-    # The active request span is enriched with ASR-specific attributes.
+    # The active request span is enriched with AS-specific attributes.
     # These attributes later help Dynatrace and ServiceNow correlate prediction behavior
     # with model version, audit status, request ID, and trace ID.
 
     current_span = trace.get_current_span()
-    current_span.set_attribute("asr.service_name", SERVICE_NAME)
-    current_span.set_attribute("asr.environment", ENVIRONMENT)
-    current_span.set_attribute("asr.model_name", MODEL_NAME)
-    current_span.set_attribute("asr.model_version", MODEL_VERSION)
-    current_span.set_attribute("asr.artifact_loaded", ARTIFACT_LOADED)
-    current_span.set_attribute("asr.audit_required_input", payload.audit_required)
-    current_span.set_attribute("asr.asset_id", payload.asset_id)
-    current_span.set_attribute("asr.site_id", payload.site_id)
-    current_span.set_attribute("asr.sensor_score", payload.sensor_score)
+    current_span.set_attribute("as.service_name", SERVICE_NAME)
+    current_span.set_attribute("as.environment", ENVIRONMENT)
+    current_span.set_attribute("as.model_name", MODEL_NAME)
+    current_span.set_attribute("as.model_version", MODEL_VERSION)
+    current_span.set_attribute("as.artifact_loaded", ARTIFACT_LOADED)
+    current_span.set_attribute("as.audit_required_input", payload.audit_required)
+    current_span.set_attribute("as.asset_id", payload.asset_id)
+    current_span.set_attribute("as.site_id", payload.site_id)
+    current_span.set_attribute("as.sensor_score", payload.sensor_score)
 
     if not ARTIFACT_LOADED:
         raise HTTPException(
@@ -387,8 +387,8 @@ def predict(payload: PredictionRequest, x_trace_id: Optional[str] = Header(defau
     request_id = f"req-{uuid.uuid4().hex[:12]}"
     trace_id = generate_trace_id(x_trace_id)
 
-    current_span.set_attribute("asr.request_id", request_id)
-    current_span.set_attribute("asr.trace_id", trace_id)
+    current_span.set_attribute("as.request_id", request_id)
+    current_span.set_attribute("as.trace_id", trace_id)
 
     quality_risk, confidence = calculate_quality_risk(payload.sensor_score)
 
@@ -424,11 +424,11 @@ def predict(payload: PredictionRequest, x_trace_id: Optional[str] = Header(defau
         audit_record["audit_logged"] = True
         response["audit_logged"] = write_audit_record(audit_record)
 
-    current_span.set_attribute("asr.audit_required", response["audit_required"])
-    current_span.set_attribute("asr.audit_logged", response["audit_logged"])
-    current_span.set_attribute("asr.prediction_status", response["prediction_status"])
-    current_span.set_attribute("asr.quality_risk", response["quality_risk"])
-    current_span.set_attribute("asr.confidence", response["confidence"])
+    current_span.set_attribute("as.audit_required", response["audit_required"])
+    current_span.set_attribute("as.audit_logged", response["audit_logged"])
+    current_span.set_attribute("as.prediction_status", response["prediction_status"])
+    current_span.set_attribute("as.quality_risk", response["quality_risk"])
+    current_span.set_attribute("as.confidence", response["confidence"])
 
     return response
 

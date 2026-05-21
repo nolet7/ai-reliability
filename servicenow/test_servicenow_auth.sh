@@ -23,7 +23,7 @@ SERVICENOW_INSTANCE_URL="${SERVICENOW_INSTANCE_URL%/}"
 TEST_URL="${SERVICENOW_INSTANCE_URL}/api/now/table/incident?sysparm_limit=1"
 
 echo "============================================================"
-echo "ASR AI Reliability POC - ServiceNow Auth Test"
+echo "AS AI Reliability POC - ServiceNow Auth Test"
 echo "============================================================"
 echo "Instance: ${SERVICENOW_INSTANCE_URL}"
 echo "Username: ${SERVICENOW_USERNAME}"
@@ -31,9 +31,9 @@ echo "Password set: yes"
 echo "API test URL: ${TEST_URL}"
 echo
 
-HTTP_RESPONSE_FILE="/tmp/asr_servicenow_auth_response.json"
-HTTP_STATUS_FILE="/tmp/asr_servicenow_auth_status.txt"
-CURL_ERROR_FILE="/tmp/asr_servicenow_curl_error.txt"
+HTTP_RESPONSE_FILE="/tmp/as_servicenow_auth_response.json"
+HTTP_STATUS_FILE="/tmp/as_servicenow_auth_status.txt"
+CURL_ERROR_FILE="/tmp/as_servicenow_curl_error.txt"
 
 echo "Sending safe GET request to ServiceNow..."
 echo

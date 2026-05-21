@@ -1,7 +1,7 @@
 # k8s/networkpolicy.yaml
 #
 # Purpose:
-# Allows required ingress/egress for the ASR AI quality service.
+# Allows required ingress/egress for the AS AI quality service.
 #
 # POC behavior:
 # - Allows external LoadBalancer traffic to app port 8000.
@@ -15,16 +15,16 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: asr-ai-quality-service-network-policy
+  name: as-ai-quality-service-network-policy
   namespace: ai-reliability-poc
   labels:
-    app.kubernetes.io/name: asr-ai-quality-service
-    app.kubernetes.io/part-of: asr-ai-reliability
+    app.kubernetes.io/name: as-ai-quality-service
+    app.kubernetes.io/part-of: as-ai-reliability
     environment: poc
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: asr-ai-quality-service
+      app.kubernetes.io/name: as-ai-quality-service
 
   policyTypes:
     - Ingress

@@ -1,7 +1,7 @@
 # istio/destination-rule.yaml
 #
 # Purpose:
-# Defines Istio subsets for ASR AI quality service.
+# Defines Istio subsets for AS AI quality service.
 #
 # v1 = stable release
 # v2 = canary release
@@ -9,10 +9,10 @@
 apiVersion: networking.istio.io/v1
 kind: DestinationRule
 metadata:
-  name: asr-ai-quality-destination-rule
+  name: as-ai-quality-destination-rule
   namespace: ai-reliability-poc
 spec:
-  host: asr-ai-quality-service.ai-reliability-poc.svc.cluster.local
+  host: as-ai-quality-service.ai-reliability-poc.svc.cluster.local
   subsets:
     - name: v1
       labels:

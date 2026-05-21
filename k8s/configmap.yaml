@@ -1,7 +1,7 @@
 # k8s/configmap.yaml
 #
 # Purpose:
-# Provides non-sensitive runtime configuration for the ASR AI quality service.
+# Provides non-sensitive runtime configuration for the AS AI quality service.
 #
 # This ConfigMap injects service identity, environment, model metadata,
 # audit behavior, and database readiness behavior into the container.
@@ -12,19 +12,19 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: asr-ai-quality-service-config
+  name: as-ai-quality-service-config
   namespace: ai-reliability-poc
   labels:
-    app.kubernetes.io/name: asr-ai-quality-service
-    app.kubernetes.io/part-of: asr-ai-reliability
+    app.kubernetes.io/name: as-ai-quality-service
+    app.kubernetes.io/part-of: as-ai-reliability
     app.kubernetes.io/component: inference-api
     environment: poc
     owner: sre-platform-team
 data:
-  SERVICE_NAME: "asr-ai-quality-service"
+  SERVICE_NAME: "as-ai-quality-service"
   ENVIRONMENT: "poc"
   OWNER: "sre-platform-team"
-  MODEL_NAME: "asr-quality-classifier"
+  MODEL_NAME: "as-quality-classifier"
   MODEL_VERSION: "v1.0.3"
   ARTIFACT_LOADED: "true"
   AUDIT_REQUIRED: "true"

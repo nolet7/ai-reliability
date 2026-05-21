@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document captures proof that the ASR AI Reliability POC is connected to Dynatrace through OpenTelemetry OTLP.
+This document captures proof that the AS AI Reliability POC is connected to Dynatrace through OpenTelemetry OTLP.
 
 ---
 
@@ -16,7 +16,7 @@ Connected
 
 Service name:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 Dynatrace displayed the service under classic service monitoring with endpoint-level visibility.
 
@@ -30,7 +30,7 @@ ai-reliability-poc
 
 Deployment:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 LoadBalancer IP:
 

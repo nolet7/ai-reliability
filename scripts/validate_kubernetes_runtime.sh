@@ -3,7 +3,7 @@
 # scripts/validate_kubernetes_runtime.sh
 #
 # Purpose:
-# Validates the ASR AI quality service running in Kubernetes.
+# Validates the AS AI quality service running in Kubernetes.
 #
 # This script proves:
 # - Namespace exists
@@ -23,11 +23,11 @@
 set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-ai-reliability-poc}"
-APP_NAME="${APP_NAME:-asr-ai-quality-service}"
+APP_NAME="${APP_NAME:-as-ai-quality-service}"
 TRACE_ID="${TRACE_ID:-k8s-runtime-trace-001}"
 
 echo "============================================================"
-echo "ASR AI Reliability POC - Kubernetes Runtime Validation"
+echo "AS AI Reliability POC - Kubernetes Runtime Validation"
 echo "============================================================"
 echo "Namespace: ${NAMESPACE}"
 echo "Application: ${APP_NAME}"
@@ -117,7 +117,7 @@ curl -s -X POST "${BASE_URL}/predict" \
   -H "x-trace-id: ${TRACE_ID}" \
   -d '{
     "asset_id": "asset-k8s-runtime-1001",
-    "site_id": "site-asr-poc-001",
+    "site_id": "site-as-poc-001",
     "sensor_score": 90.5,
     "audit_required": true
   }' > "${RESPONSE_FILE}"
@@ -137,9 +137,9 @@ with open(response_file, "r", encoding="utf-8") as f:
     data = json.load(f)
 
 checks = {
-    "service_name": "asr-ai-quality-service",
+    "service_name": "as-ai-quality-service",
     "environment": "poc",
-    "model_name": "asr-quality-classifier",
+    "model_name": "as-quality-classifier",
     "model_version": "v1.0.3",
     "trace_id": expected_trace_id,
     "prediction_status": "success",
@@ -169,10 +169,10 @@ time curl -s "${BASE_URL}/simulate-latency?seconds=1" | python -m json.tool
 echo
 
 echo "Step 14: Testing controlled error simulation..."
-HTTP_STATUS="$(curl -s -o /tmp/asr_k8s_error.json -w "%{http_code}" "${BASE_URL}/simulate-error")"
+HTTP_STATUS="$(curl -s -o /tmp/as_k8s_error.json -w "%{http_code}" "${BASE_URL}/simulate-error")"
 
 echo "HTTP status: ${HTTP_STATUS}"
-cat /tmp/asr_k8s_error.json | python -m json.tool || cat /tmp/asr_k8s_error.json
+cat /tmp/as_k8s_error.json | python -m json.tool || cat /tmp/as_k8s_error.json
 
 if [ "${HTTP_STATUS}" != "500" ]; then
   echo "Expected HTTP 500 but got ${HTTP_STATUS}"
@@ -186,7 +186,7 @@ kubectl logs -n "${NAMESPACE}" -l app.kubernetes.io/name="${APP_NAME}" --tail=80
 echo
 
 rm -f "${RESPONSE_FILE}"
-rm -f /tmp/asr_k8s_error.json
+rm -f /tmp/as_k8s_error.json
 
 echo "============================================================"
 echo "Kubernetes runtime validation completed successfully."

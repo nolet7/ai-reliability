@@ -22,7 +22,7 @@ if [ -z "${ISTIO_INGRESS_IP}" ]; then
 fi
 
 echo "============================================================"
-echo "ASR AI Reliability POC - Istio Traffic Split Validation"
+echo "AS AI Reliability POC - Istio Traffic Split Validation"
 echo "============================================================"
 echo "Istio Ingress IP: ${ISTIO_INGRESS_IP}"
 echo "Request count: ${REQUEST_COUNT}"

@@ -3,7 +3,7 @@
 # scripts/run_phase2_validation.sh
 #
 # Purpose:
-# Runs all Phase 2 validation checks for the ASR AI Reliability POC.
+# Runs all Phase 2 validation checks for the AS AI Reliability POC.
 #
 # This script proves that the FastAPI reliability service supports:
 # - Health validation
@@ -20,20 +20,20 @@ set -euo pipefail
 BASE_URL="${BASE_URL:-http://127.0.0.1:8000}"
 
 echo "============================================================"
-echo "ASR AI Reliability POC - Phase 2 Validation"
+echo "AS AI Reliability POC - Phase 2 Validation"
 echo "============================================================"
 echo "Base URL: ${BASE_URL}"
 echo
 
 echo "Step 1: Checking that application is reachable..."
-if ! curl -s "${BASE_URL}/" >/tmp/asr_root_check.json; then
+if ! curl -s "${BASE_URL}/" >/tmp/as_root_check.json; then
   echo "Application is not reachable at ${BASE_URL}"
   echo "Start it with:"
   echo "python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
   exit 1
 fi
 
-cat /tmp/asr_root_check.json | python -m json.tool
+cat /tmp/as_root_check.json | python -m json.tool
 echo
 
 echo "Step 2: Validating health endpoints..."
@@ -98,10 +98,10 @@ audit_file = Path("local/generated/audit/prediction_audit.jsonl")
 last_line = audit_file.read_text(encoding="utf-8").strip().splitlines()[-1]
 record = json.loads(last_line)
 
-if record.get("service_name") != "asr-ai-quality-service":
+if record.get("service_name") != "as-ai-quality-service":
     raise SystemExit(f"Unexpected service_name in audit file: {record.get('service_name')}")
 
-if record.get("model_name") != "asr-quality-classifier":
+if record.get("model_name") != "as-quality-classifier":
     raise SystemExit(f"Unexpected model_name in audit file: {record.get('model_name')}")
 
 if record.get("audit_required") is not True:
@@ -118,4 +118,4 @@ echo "============================================================"
 echo "Phase 2 validation completed successfully."
 echo "============================================================"
 
-rm -f /tmp/asr_root_check.json
+rm -f /tmp/as_root_check.json

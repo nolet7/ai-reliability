@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This folder contains the PostgreSQL database schema and Atlas drift detection files for the ASR AI Reliability Incident Automation POC.
+This folder contains the PostgreSQL database schema and Atlas drift detection files for the AS AI Reliability Incident Automation POC.
 
 The database supports:
 
@@ -48,6 +48,6 @@ Atlas will later compare the approved Git schema:
 database/schema.sql
 against the live PostgreSQL database:
 
-asr_ai_poc
+as_ai_poc
 
 If the live database is changed outside the approved Git process, Atlas will detect drift and we will generate drift evidence for ServiceNow.

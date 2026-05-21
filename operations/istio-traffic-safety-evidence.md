@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document captures evidence that the ASR AI Reliability POC supports Istio-based traffic safety.
+This document captures evidence that the AS AI Reliability POC supports Istio-based traffic safety.
 
 The implemented controls include:
 
@@ -25,7 +25,7 @@ ai-reliability-poc
 
 Deployment:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 Version label:
 
@@ -53,7 +53,7 @@ Expected pod readiness:
 
 Deployment:
 
-asr-ai-quality-service-v2
+as-ai-quality-service-v2
 
 Version label:
 
@@ -81,15 +81,15 @@ Canary was tested and then scaled down after rollback.
 
 Gateway:
 
-asr-ai-quality-gateway
+as-ai-quality-gateway
 
 DestinationRule:
 
-asr-ai-quality-destination-rule
+as-ai-quality-destination-rule
 
 VirtualService:
 
-asr-ai-quality-virtual-service
+as-ai-quality-virtual-service
 
 Istio IngressGateway IP:
 
@@ -162,7 +162,7 @@ scripts/validate_istio_traffic_split.sh
 
 ## SRE Value
 
-This traffic safety layer proves that the ASR AI Reliability POC can support controlled release practices.
+This traffic safety layer proves that the AS AI Reliability POC can support controlled release practices.
 
 The SRE team can:
 

@@ -23,7 +23,7 @@ else
 fi
 
 MSYS_NO_PATHCONV=1 docker run --rm \
-  --network asr-poc-net \
+  --network as-poc-net \
   -v "${HOST_WORKDIR}:/workspace" \
   -w /workspace \
   arigaio/atlas:latest "$@"

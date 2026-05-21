@@ -34,9 +34,9 @@ Complete
 
 ## Current Service
 
-service_name: asr-ai-quality-service
+service_name: as-ai-quality-service
 environment: poc
-model_name: asr-quality-classifier
+model_name: as-quality-classifier
 model_version: v1.0.3
 namespace: ai-reliability-poc
 load_balancer_ip: 139.144.255.192

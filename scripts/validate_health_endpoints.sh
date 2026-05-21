@@ -3,7 +3,7 @@
 # scripts/validate_health_endpoints.sh
 #
 # Purpose:
-# Validates the core SRE health endpoints for the ASR AI Reliability POC.
+# Validates the core SRE health endpoints for the AS AI Reliability POC.
 #
 # This script checks:
 # - /health/live

@@ -1,8 +1,8 @@
-# ASR AI Reliability POC — Final Evidence Summary
+# AS AI Reliability POC — Final Evidence Summary
 
 ## Project Name
 
-ASR AI Reliability Incident Automation POC
+AS AI Reliability Incident Automation POC
 
 ---
 
@@ -26,7 +26,7 @@ The POC has successfully validated:
 
 Service:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 Environment:
 
@@ -34,7 +34,7 @@ poc
 
 Model:
 
-asr-quality-classifier
+as-quality-classifier
 
 Model Version:
 
@@ -60,7 +60,7 @@ ai-reliability-poc
 
 Deployment:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 Service Type:
 
@@ -88,7 +88,7 @@ Runtime controls implemented:
 
 Database:
 
-asr_ai_poc
+as_ai_poc
 
 Approved schema:
 
@@ -122,7 +122,7 @@ Connected
 
 Service visible in Dynatrace:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 Validated telemetry:
 
@@ -167,9 +167,9 @@ Validated ServiceNow behavior:
 
 Known incident examples:
 
-- INC0010001 — ASR AI Reliability POC test incident from automation
-- INC0010002 — ASR AI Reliability POC minimal test incident
-- INC0010003 — ASR manual test incident
+- INC0010001 — AS AI Reliability POC test incident from automation
+- INC0010002 — AS AI Reliability POC minimal test incident
+- INC0010003 — AS manual test incident
 - INC0010006 — Atlas schema drift incident
 
 ---
@@ -254,7 +254,7 @@ Incident controls:
 
 ## Interview Story
 
-I built an ASR AI Reliability POC that connected application health, Kubernetes runtime controls, OpenTelemetry tracing, Dynatrace observability, Atlas schema drift detection, and ServiceNow incident automation.
+I built an AS AI Reliability POC that connected application health, Kubernetes runtime controls, OpenTelemetry tracing, Dynatrace observability, Atlas schema drift detection, and ServiceNow incident automation.
 
 The service exposes liveness, readiness, and model-health endpoints, along with model name, model version, artifact-loaded status, request ID, trace ID, and audit evidence. I deployed the service to Kubernetes with probes, resource limits, RBAC, NetworkPolicy, and a LoadBalancer.
 

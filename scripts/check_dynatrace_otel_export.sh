@@ -8,7 +8,7 @@
 set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-ai-reliability-poc}"
-APP_NAME="${APP_NAME:-asr-ai-quality-service}"
+APP_NAME="${APP_NAME:-as-ai-quality-service}"
 SINCE="${SINCE:-5m}"
 
 echo "Checking Dynatrace OTLP export errors..."

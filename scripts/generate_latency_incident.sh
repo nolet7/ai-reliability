@@ -3,7 +3,7 @@
 # scripts/generate_latency_incident.sh
 #
 # Purpose:
-# Generates controlled latency against the ASR AI quality service.
+# Generates controlled latency against the AS AI quality service.
 #
 # Why it matters:
 # This script will later be used to create enough slow traffic for Dynatrace

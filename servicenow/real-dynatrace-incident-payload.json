@@ -1,9 +1,9 @@
 {
-  "short_description": "Dynatrace detected ASR AI quality service reliability issue",
-  "description": "Dynatrace detected a reliability issue affecting the ASR AI quality service.\n\nService: asr-ai-quality-service\nEnvironment: poc\nModel: asr-quality-classifier\nModel Version: v1.0.3\nAffected Endpoint: POST /predict\nKubernetes Namespace: ai-reliability-poc\nKubernetes Deployment: asr-ai-quality-service\nLoadBalancer IP: 139.144.255.192\n\nObserved Evidence:\n- Dynatrace service is visible: asr-ai-quality-service\n- OpenTelemetry export is working with no recent 401, 403, timeout, or failed export errors\n- /predict traffic was generated through the Kubernetes LoadBalancer\n- /simulate-latency and /simulate-error are available for reliability testing\n\nRecommended Action:\nReview Dynatrace service metrics, inspect traces, check Kubernetes pod logs, validate model readiness, and follow the ASR AI service runbook.",
+  "short_description": "Dynatrace detected AS AI quality service reliability issue",
+  "description": "Dynatrace detected a reliability issue affecting the AS AI quality service.\n\nService: as-ai-quality-service\nEnvironment: poc\nModel: as-quality-classifier\nModel Version: v1.0.3\nAffected Endpoint: POST /predict\nKubernetes Namespace: ai-reliability-poc\nKubernetes Deployment: as-ai-quality-service\nLoadBalancer IP: 139.144.255.192\n\nObserved Evidence:\n- Dynatrace service is visible: as-ai-quality-service\n- OpenTelemetry export is working with no recent 401, 403, timeout, or failed export errors\n- /predict traffic was generated through the Kubernetes LoadBalancer\n- /simulate-latency and /simulate-error are available for reliability testing\n\nRecommended Action:\nReview Dynatrace service metrics, inspect traces, check Kubernetes pod logs, validate model readiness, and follow the AS AI service runbook.",
   "impact": "2",
   "urgency": "2",
   "category": "inquiry",
-  "correlation_id": "dynatrace-asr-ai-quality-service-poc-001",
-  "work_notes": "Created by ASR AI Reliability POC automation using Dynatrace service evidence."
+  "correlation_id": "dynatrace-as-ai-quality-service-poc-001",
+  "work_notes": "Created by AS AI Reliability POC automation using Dynatrace service evidence."
 }

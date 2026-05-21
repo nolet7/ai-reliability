@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This checklist validates that the ASR AI Reliability POC has the required observability evidence before moving to ServiceNow incident automation.
+This checklist validates that the AS AI Reliability POC has the required observability evidence before moving to ServiceNow incident automation.
 
 ---
 
@@ -21,8 +21,8 @@ This checklist validates that the ASR AI Reliability POC has the required observ
 ## Kubernetes Evidence
 
 - [ ] Namespace exists: ai-reliability-poc
-- [ ] Deployment exists: asr-ai-quality-service
-- [ ] Service exists: asr-ai-quality-service
+- [ ] Deployment exists: as-ai-quality-service
+- [ ] Service exists: as-ai-quality-service
 - [ ] Pods are Running
 - [ ] Pods are Ready
 - [ ] LoadBalancer IP is available
@@ -33,8 +33,8 @@ This checklist validates that the ASR AI Reliability POC has the required observ
 ## OpenTelemetry Evidence
 
 - [ ] OTEL_ENABLED is true inside the pod
-- [ ] Service name is asr-ai-quality-service
-- [ ] Model name is asr-quality-classifier
+- [ ] Service name is as-ai-quality-service
+- [ ] Model name is as-quality-classifier
 - [ ] Prediction requests include trace_id
 - [ ] Prediction requests include request_id
 - [ ] Prediction requests include model_version

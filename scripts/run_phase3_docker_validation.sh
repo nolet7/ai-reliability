@@ -3,7 +3,7 @@
 # scripts/run_phase3_docker_validation.sh
 #
 # Purpose:
-# Validates the ASR AI Quality Service running inside Docker.
+# Validates the AS AI Quality Service running inside Docker.
 #
 # This script proves:
 # - Docker container is running
@@ -20,12 +20,12 @@
 
 set -euo pipefail
 
-CONTAINER_NAME="${CONTAINER_NAME:-asr-ai-quality-service-poc}"
+CONTAINER_NAME="${CONTAINER_NAME:-as-ai-quality-service-poc}"
 BASE_URL="${BASE_URL:-http://127.0.0.1:8010}"
 TRACE_ID="${TRACE_ID:-docker-trace-phase3-001}"
 
 echo "============================================================"
-echo "ASR AI Reliability POC - Phase 3 Docker Validation"
+echo "AS AI Reliability POC - Phase 3 Docker Validation"
 echo "============================================================"
 echo "Container: ${CONTAINER_NAME}"
 echo "Base URL: ${BASE_URL}"
@@ -67,7 +67,7 @@ curl -s -X POST "${BASE_URL}/predict" \
   -H "x-trace-id: ${TRACE_ID}" \
   -d '{
     "asset_id": "asset-3001",
-    "site_id": "site-asr-poc-001",
+    "site_id": "site-as-poc-001",
     "sensor_score": 92.4,
     "audit_required": true
   }' > "${RESPONSE_FILE}"
@@ -87,9 +87,9 @@ with open(response_file, "r", encoding="utf-8") as f:
     data = json.load(f)
 
 checks = {
-    "service_name": "asr-ai-quality-service",
+    "service_name": "as-ai-quality-service",
     "environment": "poc",
-    "model_name": "asr-quality-classifier",
+    "model_name": "as-quality-classifier",
     "model_version": "v1.0.3",
     "trace_id": expected_trace_id,
     "prediction_status": "success",
@@ -122,9 +122,9 @@ docker exec "${CONTAINER_NAME}" sh -c "tail -n 1 /app/local/generated/audit/pred
 
 echo
 echo "Step 9: Validating latest audit file record..."
-docker exec "${CONTAINER_NAME}" sh -c "tail -n 1 /app/local/generated/audit/prediction_audit.jsonl" > /tmp/asr_phase3_audit_record.json
+docker exec "${CONTAINER_NAME}" sh -c "tail -n 1 /app/local/generated/audit/prediction_audit.jsonl" > /tmp/as_phase3_audit_record.json
 
-python - "/tmp/asr_phase3_audit_record.json" "${TRACE_ID}" <<'PY'
+python - "/tmp/as_phase3_audit_record.json" "${TRACE_ID}" <<'PY'
 import json
 import sys
 
@@ -137,10 +137,10 @@ with open(audit_file, "r", encoding="utf-8") as f:
 if data.get("trace_id") != expected_trace_id:
     raise SystemExit(f"trace_id expected {expected_trace_id}, got {data.get('trace_id')}")
 
-if data.get("service_name") != "asr-ai-quality-service":
+if data.get("service_name") != "as-ai-quality-service":
     raise SystemExit(f"Unexpected service_name: {data.get('service_name')}")
 
-if data.get("model_name") != "asr-quality-classifier":
+if data.get("model_name") != "as-quality-classifier":
     raise SystemExit(f"Unexpected model_name: {data.get('model_name')}")
 
 if data.get("audit_required") is not True:
@@ -158,10 +158,10 @@ time curl -s "${BASE_URL}/simulate-latency?seconds=1" | python -m json.tool
 
 echo
 echo "Step 11: Testing controlled error simulation..."
-HTTP_STATUS="$(curl -s -o /tmp/asr_phase3_error.json -w "%{http_code}" "${BASE_URL}/simulate-error")"
+HTTP_STATUS="$(curl -s -o /tmp/as_phase3_error.json -w "%{http_code}" "${BASE_URL}/simulate-error")"
 
 echo "HTTP status: ${HTTP_STATUS}"
-cat /tmp/asr_phase3_error.json | python -m json.tool || cat /tmp/asr_phase3_error.json
+cat /tmp/as_phase3_error.json | python -m json.tool || cat /tmp/as_phase3_error.json
 
 if [ "${HTTP_STATUS}" != "500" ]; then
   echo "Expected HTTP 500 but got ${HTTP_STATUS}"
@@ -180,8 +180,8 @@ if [ "${HEALTH_STATUS}" != "healthy" ]; then
 fi
 
 rm -f "${RESPONSE_FILE}"
-rm -f /tmp/asr_phase3_audit_record.json
-rm -f /tmp/asr_phase3_error.json
+rm -f /tmp/as_phase3_audit_record.json
+rm -f /tmp/as_phase3_error.json
 
 echo
 echo "============================================================"

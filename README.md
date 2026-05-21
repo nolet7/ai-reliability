@@ -1,4 +1,4 @@
-# ASR AI Reliability Incident Automation POC
+# AS AI Reliability Incident Automation POC
 
 ## 1. Project Overview
 
@@ -18,7 +18,7 @@ The goal is to demonstrate how an enterprise SRE team can monitor, validate, pro
 The POC focuses on an example AI service called:
 
 ```text
-asr-ai-quality-service
+as-ai-quality-service
 ```
 
 This service represents an AI quality prediction API used in a reliability-sensitive enterprise environment.
@@ -48,10 +48,10 @@ The main objective is to build a reliability layer that can answer these operati
 ## 3. Target Architecture
 
 ```text
-ASR AI Reliability Incident Automation POC
+AS AI Reliability Incident Automation POC
 │
 ├── Application Layer
-│   ├── asr-ai-quality-service
+│   ├── as-ai-quality-service
 │   ├── /predict
 │   ├── /simulate-latency
 │   ├── /simulate-error
@@ -139,8 +139,8 @@ The service will expose:
 
 ```json
 {
-  "service_name": "asr-ai-quality-service",
-  "model_name": "asr-quality-classifier",
+  "service_name": "as-ai-quality-service",
+  "model_name": "as-quality-classifier",
   "model_version": "v1.0.3",
   "artifact_loaded": true,
   "environment": "poc"
@@ -157,7 +157,7 @@ Each prediction should produce audit evidence:
   "audit_required": true,
   "audit_logged": true,
   "trace_id": "example-trace-id",
-  "model_name": "asr-quality-classifier",
+  "model_name": "as-quality-classifier",
   "model_version": "v1.0.3",
   "prediction_status": "success"
 }
@@ -202,7 +202,7 @@ Initial POC-level SLOs:
 ## 8. Repository Structure
 
 ```text
-asr-ai-incident-poc/
+as-ai-incident-poc/
 ├── app/
 ├── k8s/
 ├── istio/

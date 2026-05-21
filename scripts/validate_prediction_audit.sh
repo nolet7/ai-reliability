@@ -32,7 +32,7 @@ curl -s -X POST "${BASE_URL}/predict" \
   -H "x-trace-id: ${TRACE_ID}" \
   -d '{
     "asset_id": "asset-1001",
-    "site_id": "site-asr-poc-001",
+    "site_id": "site-as-poc-001",
     "sensor_score": 87.5,
     "audit_required": true
   }' > "${RESPONSE_FILE}"
@@ -75,10 +75,10 @@ if missing:
 if data["trace_id"] != expected_trace_id:
     raise SystemExit(f"Trace ID mismatch. Expected {expected_trace_id}, got {data['trace_id']}")
 
-if data["service_name"] != "asr-ai-quality-service":
+if data["service_name"] != "as-ai-quality-service":
     raise SystemExit(f"Unexpected service_name: {data['service_name']}")
 
-if data["model_name"] != "asr-quality-classifier":
+if data["model_name"] != "as-quality-classifier":
     raise SystemExit(f"Unexpected model_name: {data['model_name']}")
 
 if data["artifact_loaded"] is not True:

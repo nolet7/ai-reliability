@@ -1,7 +1,7 @@
 # k8s/service.yaml
 #
 # Purpose:
-# Exposes the ASR AI quality service through a Kubernetes LoadBalancer.
+# Exposes the AS AI quality service through a Kubernetes LoadBalancer.
 #
 # Why this matters:
 # We do not want to rely on kubectl port-forward for this POC.
@@ -15,18 +15,18 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: asr-ai-quality-service
+  name: as-ai-quality-service
   namespace: ai-reliability-poc
   labels:
-    app.kubernetes.io/name: asr-ai-quality-service
-    app.kubernetes.io/part-of: asr-ai-reliability
+    app.kubernetes.io/name: as-ai-quality-service
+    app.kubernetes.io/part-of: as-ai-reliability
     app.kubernetes.io/component: inference-api
     environment: poc
     owner: sre-platform-team
 spec:
   type: LoadBalancer
   selector:
-    app.kubernetes.io/name: asr-ai-quality-service
+    app.kubernetes.io/name: as-ai-quality-service
     app.kubernetes.io/component: inference-api
     environment: poc
   ports:

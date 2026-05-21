@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This checklist defines what is needed before the ASR AI Reliability POC can create ServiceNow incidents.
+This checklist defines what is needed before the AS AI Reliability POC can create ServiceNow incidents.
 
 The integration will later create incidents from:
 
@@ -45,7 +45,7 @@ Create or use a dedicated integration user.
 
 Recommended username:
 
-asr.ai.reliability.integration
+as.ai.reliability.integration
 
 Recommended role:
 
@@ -82,10 +82,10 @@ SERVICENOW_DEFAULT_CI
 Example only:
 
 export SERVICENOW_INSTANCE_URL="https://your-instance.service-now.com"
-export SERVICENOW_USERNAME="asr.ai.reliability.integration"
+export SERVICENOW_USERNAME="as.ai.reliability.integration"
 export SERVICENOW_PASSWORD="your-password-or-api-secret"
 export SERVICENOW_ASSIGNMENT_GROUP="SRE Platform Operations"
-export SERVICENOW_DEFAULT_CI="ASR AI Quality Service"
+export SERVICENOW_DEFAULT_CI="AS AI Quality Service"
 
 ---
 
@@ -113,7 +113,7 @@ severity
 
 ---
 
-## ASR Standard Incident Values
+## AS Standard Incident Values
 
 assignment_group:
 
@@ -121,11 +121,11 @@ SRE Platform Operations
 
 cmdb_ci:
 
-ASR AI Quality Service
+AS AI Quality Service
 
 business_service:
 
-ASR AI Reliability Platform
+AS AI Reliability Platform
 
 category:
 

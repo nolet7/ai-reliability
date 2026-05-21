@@ -12,7 +12,7 @@ Complete
 
 ## What Was Implemented
 
-The ASR AI Reliability POC now includes release gate controls for:
+The AS AI Reliability POC now includes release gate controls for:
 
 - Kubernetes rollout health
 - Pod readiness
@@ -109,7 +109,7 @@ Live PostgreSQL schema matches the approved Git schema.
 
 Service:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 Environment:
 
@@ -117,7 +117,7 @@ poc
 
 Model:
 
-asr-quality-classifier
+as-quality-classifier
 
 Model version:
 
@@ -160,4 +160,4 @@ servicenow/create_incident_from_release_gate.sh
 
 ## SRE Value
 
-This release gate layer proves that the ASR AI Reliability POC can prevent unsafe releases by validating health, model readiness, audit evidence, schema integrity, Kubernetes runtime state, and rollback safety before promotion.
+This release gate layer proves that the AS AI Reliability POC can prevent unsafe releases by validating health, model readiness, audit evidence, schema integrity, Kubernetes runtime state, and rollback safety before promotion.

@@ -7,7 +7,7 @@
 #
 # This script compares:
 # - Approved Git schema: database/schema-atlas.sql
-# - Live PostgreSQL database: asr_ai_poc
+# - Live PostgreSQL database: as_ai_poc
 #
 # If drift exists, the script:
 # - Saves Atlas diff output
@@ -26,8 +26,8 @@
 set -euo pipefail
 
 APPROVED_SCHEMA="${APPROVED_SCHEMA:-database/schema-atlas.sql}"
-LIVE_DB_URL="${LIVE_DB_URL:-postgres://asr_user:asr_password@asr-ai-postgres-poc:5432/asr_ai_poc?sslmode=disable}"
-DEV_DB_URL="${DEV_DB_URL:-postgres://asr_user:asr_password@asr-ai-atlas-dev-postgres:5432/dev?sslmode=disable}"
+LIVE_DB_URL="${LIVE_DB_URL:-postgres://as_user:as_password@as-ai-postgres-poc:5432/as_ai_poc?sslmode=disable}"
+DEV_DB_URL="${DEV_DB_URL:-postgres://as_user:as_password@as-ai-atlas-dev-postgres:5432/dev?sslmode=disable}"
 
 OUTPUT_DIR="${OUTPUT_DIR:-local/generated/atlas}"
 DIFF_FILE="${OUTPUT_DIR}/schema-drift-detected.sql"
@@ -35,17 +35,17 @@ SUMMARY_FILE="${OUTPUT_DIR}/schema-drift-summary.txt"
 STATUS_FILE="${OUTPUT_DIR}/schema-drift-status.txt"
 PAYLOAD_FILE="${OUTPUT_DIR}/servicenow-schema-drift-payload.json"
 
-DATABASE_NAME="${DATABASE_NAME:-asr_ai_poc}"
+DATABASE_NAME="${DATABASE_NAME:-as_ai_poc}"
 ENVIRONMENT="${ENVIRONMENT:-poc}"
-SERVICE_NAME="${SERVICE_NAME:-asr-ai-quality-service}"
-CI_NAME="${CI_NAME:-ASR AI PostgreSQL Database}"
+SERVICE_NAME="${SERVICE_NAME:-as-ai-quality-service}"
+CI_NAME="${CI_NAME:-AS AI PostgreSQL Database}"
 ASSIGNMENT_GROUP="${ASSIGNMENT_GROUP:-SRE Platform Operations}"
 RUNBOOK_URL="${RUNBOOK_URL:-runbooks/database-schema-drift.md}"
 
 mkdir -p "${OUTPUT_DIR}"
 
 echo "============================================================"
-echo "ASR AI Reliability POC - Atlas Schema Drift Check"
+echo "AS AI Reliability POC - Atlas Schema Drift Check"
 echo "============================================================"
 echo "Approved schema: ${APPROVED_SCHEMA}"
 echo "Live database:   ${DATABASE_NAME}"
@@ -85,7 +85,7 @@ echo
 # We also treat an empty file as no drift.
 if [ ! -s "${DIFF_FILE}" ] || grep -q "Schemas are synced, no changes to be made" "${DIFF_FILE}"; then
   cat > "${STATUS_FILE}" <<STATUS_EOF
-ASR AI Reliability POC - Schema Drift Status
+AS AI Reliability POC - Schema Drift Status
 
 Status:
 NO_DRIFT
@@ -117,7 +117,7 @@ fi
 
 # If we get here, Atlas found differences.
 cat > "${SUMMARY_FILE}" <<SUMMARY_EOF
-ASR AI Reliability POC - Schema Drift Evidence
+AS AI Reliability POC - Schema Drift Evidence
 
 Status:
 DRIFT_DETECTED

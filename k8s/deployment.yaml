@@ -1,7 +1,7 @@
 # k8s/deployment.yaml
 #
 # Purpose:
-# Deploys the ASR AI quality service into Kubernetes.
+# Deploys the AS AI quality service into Kubernetes.
 #
 # Istio note:
 # The pod template includes version: v1 for Istio DestinationRule subset routing.
@@ -10,54 +10,54 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: asr-ai-quality-service
+  name: as-ai-quality-service
   namespace: ai-reliability-poc
   labels:
-    app.kubernetes.io/name: asr-ai-quality-service
-    app.kubernetes.io/part-of: asr-ai-reliability
+    app.kubernetes.io/name: as-ai-quality-service
+    app.kubernetes.io/part-of: as-ai-reliability
     app.kubernetes.io/component: inference-api
     app.kubernetes.io/version: v1.0.3
     environment: poc
     owner: sre-platform-team
-    model_name: asr-quality-classifier
+    model_name: as-quality-classifier
     model_version: v1.0.3
     version: v1
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app.kubernetes.io/name: asr-ai-quality-service
+      app.kubernetes.io/name: as-ai-quality-service
       app.kubernetes.io/component: inference-api
       environment: poc
 
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: asr-ai-quality-service
-        app.kubernetes.io/part-of: asr-ai-reliability
+        app.kubernetes.io/name: as-ai-quality-service
+        app.kubernetes.io/part-of: as-ai-reliability
         app.kubernetes.io/component: inference-api
         app.kubernetes.io/version: v1.0.3
         environment: poc
         owner: sre-platform-team
-        model_name: asr-quality-classifier
+        model_name: as-quality-classifier
         model_version: v1.0.3
         version: v1
       annotations:
-        sre.asr.ai/reliability-layer: "enabled"
-        sre.asr.ai/health-live: "/health/live"
-        sre.asr.ai/health-ready: "/health/ready"
-        sre.asr.ai/health-model: "/health/model"
-        sre.asr.ai/audit-required: "true"
-        sre.asr.ai/dynatrace-service: "asr-ai-quality-service"
-        sre.asr.ai/runbook: "runbooks/asr-ai-quality-service.md"
+        sre.as.ai/reliability-layer: "enabled"
+        sre.as.ai/health-live: "/health/live"
+        sre.as.ai/health-ready: "/health/ready"
+        sre.as.ai/health-model: "/health/model"
+        sre.as.ai/audit-required: "true"
+        sre.as.ai/dynatrace-service: "as-ai-quality-service"
+        sre.as.ai/runbook: "runbooks/as-ai-quality-service.md"
 
     spec:
-      serviceAccountName: asr-ai-quality-service-sa
+      serviceAccountName: as-ai-quality-service-sa
       automountServiceAccountToken: false
 
       containers:
-        - name: asr-ai-quality-service
-          image: noletengine/asr-ai-quality-service:poc
+        - name: as-ai-quality-service
+          image: noletengine/as-ai-quality-service:poc
           imagePullPolicy: Always
 
           ports:
@@ -67,9 +67,9 @@ spec:
 
           envFrom:
             - configMapRef:
-                name: asr-ai-quality-service-config
+                name: as-ai-quality-service-config
             - secretRef:
-                name: asr-ai-quality-service-db-secret
+                name: as-ai-quality-service-db-secret
             - secretRef:
                 name: dynatrace-otel-secret
 

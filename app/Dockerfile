@@ -1,9 +1,9 @@
 # app/Dockerfile
 #
 # Purpose:
-# Container image for the ASR AI Quality Service.
+# Container image for the AS AI Quality Service.
 #
-# This Dockerfile supports the ASR AI Reliability Incident Automation POC by:
+# This Dockerfile supports the AS AI Reliability Incident Automation POC by:
 # - Packaging the FastAPI application
 # - Running the service on port 8000
 # - Supporting Kubernetes health probes
@@ -21,10 +21,10 @@ ENV PYTHONUNBUFFERED=1
 
 # Define application metadata defaults.
 # These can be overridden later by Docker, Kubernetes ConfigMap, Helm, or CI/CD.
-ENV SERVICE_NAME=asr-ai-quality-service
+ENV SERVICE_NAME=as-ai-quality-service
 ENV ENVIRONMENT=poc
 ENV OWNER=sre-platform-team
-ENV MODEL_NAME=asr-quality-classifier
+ENV MODEL_NAME=as-quality-classifier
 ENV MODEL_VERSION=v1.0.3
 ENV ARTIFACT_LOADED=true
 ENV AUDIT_REQUIRED=true

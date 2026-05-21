@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file documents Dynatrace DQL query ideas for the ASR AI Reliability Incident Automation POC.
+This file documents Dynatrace DQL query ideas for the AS AI Reliability Incident Automation POC.
 
 These queries support:
 
@@ -17,30 +17,30 @@ These queries support:
 
 ## Service Name
 
-asr-ai-quality-service
+as-ai-quality-service
 
 ---
 
 ## Expected Model Metadata
 
-service.name: asr-ai-quality-service
+service.name: as-ai-quality-service
 deployment.environment: poc
-model.name: asr-quality-classifier
+model.name: as-quality-classifier
 model.version: v1.0.3
 team.owner: sre-platform-team
 
 ---
 
-## Query 1: Find ASR Service Logs
+## Query 1: Find AS Service Logs
 
 DQL:
 
 fetch logs
-| filter contains(content, "asr-ai-quality-service")
+| filter contains(content, "as-ai-quality-service")
 | sort timestamp desc
 
 Purpose:
-Find recent logs for the ASR AI quality service.
+Find recent logs for the AS AI quality service.
 
 ---
 
@@ -87,19 +87,19 @@ Find controlled latency traffic used for Dynatrace problem testing.
 
 Expected trace/span attributes from the application:
 
-- asr.service_name
-- asr.environment
-- asr.model_name
-- asr.model_version
-- asr.request_id
-- asr.trace_id
-- asr.asset_id
-- asr.site_id
-- asr.audit_required
-- asr.audit_logged
-- asr.prediction_status
-- asr.quality_risk
-- asr.confidence
+- as.service_name
+- as.environment
+- as.model_name
+- as.model_version
+- as.request_id
+- as.trace_id
+- as.asset_id
+- as.site_id
+- as.audit_required
+- as.audit_logged
+- as.prediction_status
+- as.quality_risk
+- as.confidence
 
 ---
 

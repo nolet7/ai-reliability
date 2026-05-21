@@ -1,16 +1,16 @@
 # release-safety/release-gate-config.yaml
 #
 # Purpose:
-# Defines release gates for the ASR AI Reliability Incident Automation POC.
+# Defines release gates for the AS AI Reliability Incident Automation POC.
 #
 # A release should not be trusted unless these checks pass.
 
 release_gate:
-  project: asr-ai-reliability-poc
-  service_name: asr-ai-quality-service
+  project: as-ai-reliability-poc
+  service_name: as-ai-quality-service
   environment: poc
   namespace: ai-reliability-poc
-  model_name: asr-quality-classifier
+  model_name: as-quality-classifier
   expected_model_version: v1.0.3
 
   endpoints:
@@ -22,17 +22,17 @@ release_gate:
     predict: "/predict"
 
   kubernetes:
-    deployment: asr-ai-quality-service
+    deployment: as-ai-quality-service
     expected_ready_replicas: 2
-    service: asr-ai-quality-service
+    service: as-ai-quality-service
     service_type: LoadBalancer
 
   istio:
     enabled: true
     ingress_ip: "139.144.255.92"
-    gateway: asr-ai-quality-gateway
-    destination_rule: asr-ai-quality-destination-rule
-    virtual_service: asr-ai-quality-virtual-service
+    gateway: as-ai-quality-gateway
+    destination_rule: as-ai-quality-destination-rule
+    virtual_service: as-ai-quality-virtual-service
     stable_subset: v1
     canary_subset: v2
     rollback_expected_model_version: v1.0.3
@@ -46,7 +46,7 @@ release_gate:
   observability:
     dynatrace_enabled: true
     otel_enabled_required: true
-    service_name: asr-ai-quality-service
+    service_name: as-ai-quality-service
 
   required_gates:
     - health_live_gate

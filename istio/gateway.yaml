@@ -1,7 +1,7 @@
 # istio/gateway.yaml
 #
 # Purpose:
-# Exposes the ASR AI quality service through the Istio IngressGateway.
+# Exposes the AS AI quality service through the Istio IngressGateway.
 #
 # This allows Istio VirtualService routing to control traffic splits
 # between v1 and v2.
@@ -9,7 +9,7 @@
 apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
-  name: asr-ai-quality-gateway
+  name: as-ai-quality-gateway
   namespace: ai-reliability-poc
 spec:
   selector:

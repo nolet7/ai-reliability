@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This template captures evidence from the ASR AI Reliability POC release gate validation.
+This template captures evidence from the AS AI Reliability POC release gate validation.
 
 It is used for:
 
@@ -18,11 +18,11 @@ It is used for:
 
 Project:
 
-ASR AI Reliability Incident Automation POC
+AS AI Reliability Incident Automation POC
 
 Service:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 Environment:
 
@@ -34,7 +34,7 @@ ai-reliability-poc
 
 Model:
 
-asr-quality-classifier
+as-quality-classifier
 
 Expected Model Version:
 
@@ -60,7 +60,7 @@ PASS / FAIL
 
 Evidence:
 
-kubectl rollout status deployment/asr-ai-quality-service -n ai-reliability-poc
+kubectl rollout status deployment/as-ai-quality-service -n ai-reliability-poc
 
 ---
 
@@ -72,7 +72,7 @@ PASS / FAIL
 
 Evidence:
 
-kubectl get pods -n ai-reliability-poc -l app.kubernetes.io/name=asr-ai-quality-service -o wide
+kubectl get pods -n ai-reliability-poc -l app.kubernetes.io/name=as-ai-quality-service -o wide
 
 Expected:
 

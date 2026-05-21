@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file captures the evidence needed to prove that the ASR AI Reliability POC is visible in Dynatrace.
+This file captures the evidence needed to prove that the AS AI Reliability POC is visible in Dynatrace.
 
 This evidence will later be used in ServiceNow incidents, RCA notes, and interview/demo documentation.
 
@@ -12,7 +12,7 @@ This evidence will later be used in ServiceNow incidents, RCA notes, and intervi
 
 Service detected in Dynatrace:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 Expected Dynatrace areas:
 
@@ -59,7 +59,7 @@ Capture screenshots for:
 Kubernetes log check command:
 
 kubectl logs -n ai-reliability-poc \
-  -l app.kubernetes.io/name=asr-ai-quality-service \
+  -l app.kubernetes.io/name=as-ai-quality-service \
   --since=2m | grep -i "failed to export\|401\|403\|timeout\|missing authorization\|otlp" || true
 
 Expected result:
@@ -84,7 +84,7 @@ ai-reliability-poc
 
 Deployment:
 
-asr-ai-quality-service
+as-ai-quality-service
 
 LoadBalancer IP:
 
@@ -104,9 +104,9 @@ Pods are Running and Ready.
 
 When creating a ServiceNow incident later, include:
 
-- service_name: asr-ai-quality-service
+- service_name: as-ai-quality-service
 - environment: poc
-- model_name: asr-quality-classifier
+- model_name: as-quality-classifier
 - model_version: v1.0.3
 - affected_endpoint
 - trace_id

@@ -1,7 +1,7 @@
 # k8s/rbac.yaml
 #
 # Purpose:
-# Defines minimal RBAC for the ASR AI quality service.
+# Defines minimal RBAC for the AS AI quality service.
 #
 # Why this matters:
 # The app does not need broad Kubernetes API permissions.
@@ -13,11 +13,11 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: asr-ai-quality-service-role
+  name: as-ai-quality-service-role
   namespace: ai-reliability-poc
   labels:
-    app.kubernetes.io/name: asr-ai-quality-service
-    app.kubernetes.io/part-of: asr-ai-reliability
+    app.kubernetes.io/name: as-ai-quality-service
+    app.kubernetes.io/part-of: as-ai-reliability
     environment: poc
 rules:
   - apiGroups: [""]
@@ -28,17 +28,17 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: asr-ai-quality-service-rolebinding
+  name: as-ai-quality-service-rolebinding
   namespace: ai-reliability-poc
   labels:
-    app.kubernetes.io/name: asr-ai-quality-service
-    app.kubernetes.io/part-of: asr-ai-reliability
+    app.kubernetes.io/name: as-ai-quality-service
+    app.kubernetes.io/part-of: as-ai-reliability
     environment: poc
 subjects:
   - kind: ServiceAccount
-    name: asr-ai-quality-service-sa
+    name: as-ai-quality-service-sa
     namespace: ai-reliability-poc
 roleRef:
   kind: Role
-  name: asr-ai-quality-service-role
+  name: as-ai-quality-service-role
   apiGroup: rbac.authorization.k8s.io

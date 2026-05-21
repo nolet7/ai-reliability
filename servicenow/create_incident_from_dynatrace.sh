@@ -3,7 +3,7 @@
 # servicenow/create_incident_from_dynatrace.sh
 #
 # Purpose:
-# Creates a ServiceNow incident from ASR Dynatrace runtime evidence.
+# Creates a ServiceNow incident from AS Dynatrace runtime evidence.
 
 set -euo pipefail
 

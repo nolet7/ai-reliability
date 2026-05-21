@@ -1,7 +1,7 @@
 -- database/schema.sql
 --
 -- Purpose:
--- Approved PostgreSQL schema for the ASR AI Reliability Incident Automation POC.
+-- Approved PostgreSQL schema for the AS AI Reliability Incident Automation POC.
 --
 -- This file is the Git-approved database schema.
 -- Atlas will later compare this desired schema against the live PostgreSQL database
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS model_versions (
     model_name TEXT NOT NULL,
     model_version TEXT NOT NULL,
     environment TEXT NOT NULL DEFAULT 'poc',
-    artifact_uri TEXT NOT NULL DEFAULT 'local://models/asr-quality-classifier',
+    artifact_uri TEXT NOT NULL DEFAULT 'local://models/as-quality-classifier',
     artifact_loaded BOOLEAN NOT NULL DEFAULT TRUE,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -48,9 +48,9 @@ CREATE TABLE IF NOT EXISTS prediction_requests (
     asset_id TEXT NOT NULL,
     site_id TEXT NOT NULL,
     sensor_score NUMERIC(5,2) NOT NULL,
-    service_name TEXT NOT NULL DEFAULT 'asr-ai-quality-service',
+    service_name TEXT NOT NULL DEFAULT 'as-ai-quality-service',
     environment TEXT NOT NULL DEFAULT 'poc',
-    model_name TEXT NOT NULL DEFAULT 'asr-quality-classifier',
+    model_name TEXT NOT NULL DEFAULT 'as-quality-classifier',
     model_version TEXT NOT NULL DEFAULT 'v1.0.3',
     audit_required BOOLEAN NOT NULL DEFAULT TRUE,
     received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -105,9 +105,9 @@ CREATE TABLE IF NOT EXISTS incident_audit_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     request_id TEXT,
     trace_id TEXT,
-    service_name TEXT NOT NULL DEFAULT 'asr-ai-quality-service',
+    service_name TEXT NOT NULL DEFAULT 'as-ai-quality-service',
     environment TEXT NOT NULL DEFAULT 'poc',
-    model_name TEXT NOT NULL DEFAULT 'asr-quality-classifier',
+    model_name TEXT NOT NULL DEFAULT 'as-quality-classifier',
     model_version TEXT NOT NULL DEFAULT 'v1.0.3',
     audit_required BOOLEAN NOT NULL DEFAULT TRUE,
     audit_logged BOOLEAN NOT NULL DEFAULT FALSE,
@@ -176,7 +176,7 @@ CREATE INDEX IF NOT EXISTS idx_incident_audit_log_payload_gin
 -- ------------------------------------------------------------
 
 COMMENT ON TABLE model_versions IS
-'Stores approved AI model metadata used by the ASR reliability POC.';
+'Stores approved AI model metadata used by the AS reliability POC.';
 
 COMMENT ON TABLE prediction_requests IS
 'Stores request-level prediction metadata including request_id and trace_id.';

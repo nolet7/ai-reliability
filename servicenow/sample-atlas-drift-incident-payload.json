@@ -1,13 +1,13 @@
 {
-  "short_description": "Atlas detected PostgreSQL schema drift for asr_ai_poc in poc",
-  "description": "Atlas detected that the live PostgreSQL schema no longer matches the approved Git schema.\n\nDatabase: asr_ai_poc\nEnvironment: poc\nAffected Service: asr-ai-quality-service\nConfiguration Item: ASR AI PostgreSQL Database\nApproved Schema: database/schema-atlas.sql\nDrift Evidence File: local/generated/atlas/schema-drift-detected.sql\nSummary File: local/generated/atlas/schema-drift-summary.txt\n\nOperational Risk:\nUnapproved schema drift can cause application mismatch, failed deployments, broken audit assumptions, failed migrations, and incident response confusion.\n\nRecommended Action:\nReview Atlas diff output, determine whether the change was approved, remove unauthorized drift, or promote the schema change through the approved migration process.",
+  "short_description": "Atlas detected PostgreSQL schema drift for as_ai_poc in poc",
+  "description": "Atlas detected that the live PostgreSQL schema no longer matches the approved Git schema.\n\nDatabase: as_ai_poc\nEnvironment: poc\nAffected Service: as-ai-quality-service\nConfiguration Item: AS AI PostgreSQL Database\nApproved Schema: database/schema-atlas.sql\nDrift Evidence File: local/generated/atlas/schema-drift-detected.sql\nSummary File: local/generated/atlas/schema-drift-summary.txt\n\nOperational Risk:\nUnapproved schema drift can cause application mismatch, failed deployments, broken audit assumptions, failed migrations, and incident response confusion.\n\nRecommended Action:\nReview Atlas diff output, determine whether the change was approved, remove unauthorized drift, or promote the schema change through the approved migration process.",
   "assignment_group": "SRE Platform Operations",
-  "cmdb_ci": "ASR AI PostgreSQL Database",
-  "business_service": "ASR AI Reliability Platform",
+  "cmdb_ci": "AS AI PostgreSQL Database",
+  "business_service": "AS AI Reliability Platform",
   "category": "Database Reliability",
   "subcategory": "Schema Drift",
   "impact": "2",
   "urgency": "2",
-  "correlation_id": "atlas-schema-drift-asr-ai-poc-example",
-  "work_notes": "Generated from ASR AI Reliability POC Atlas drift evidence. Attach schema-drift-detected.sql and schema-drift-summary.txt during real incident creation."
+  "correlation_id": "atlas-schema-drift-as-ai-poc-example",
+  "work_notes": "Generated from AS AI Reliability POC Atlas drift evidence. Attach schema-drift-detected.sql and schema-drift-summary.txt during real incident creation."
 }

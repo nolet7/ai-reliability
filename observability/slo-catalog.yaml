@@ -1,16 +1,16 @@
 # observability/slo-catalog.yaml
 #
 # Purpose:
-# Defines SLOs for the ASR AI Reliability Incident Automation POC.
+# Defines SLOs for the AS AI Reliability Incident Automation POC.
 #
 # These SLOs will later support Dynatrace dashboards, release gates,
 # ServiceNow incident evidence, and RCA review.
 
 service:
-  name: asr-ai-quality-service
+  name: as-ai-quality-service
   environment: poc
   owner: sre-platform-team
-  model_name: asr-quality-classifier
+  model_name: as-quality-classifier
   model_version: v1.0.3
 
 slos:

@@ -8,24 +8,24 @@
 apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
-  name: asr-ai-quality-virtual-service
+  name: as-ai-quality-virtual-service
   namespace: ai-reliability-poc
 spec:
   hosts:
     - "*"
   gateways:
-    - asr-ai-quality-gateway
+    - as-ai-quality-gateway
   http:
-    - name: asr-ai-quality-rollback-to-v1
+    - name: as-ai-quality-rollback-to-v1
       route:
         - destination:
-            host: asr-ai-quality-service.ai-reliability-poc.svc.cluster.local
+            host: as-ai-quality-service.ai-reliability-poc.svc.cluster.local
             subset: v1
             port:
               number: 80
           weight: 100
         - destination:
-            host: asr-ai-quality-service.ai-reliability-poc.svc.cluster.local
+            host: as-ai-quality-service.ai-reliability-poc.svc.cluster.local
             subset: v2
             port:
               number: 80

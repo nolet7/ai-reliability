@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This dashboard design supports the ASR AI Reliability Incident Automation POC.
+This dashboard design supports the AS AI Reliability Incident Automation POC.
 
 The dashboard should help SREs quickly answer:
 
@@ -19,7 +19,7 @@ The dashboard should help SREs quickly answer:
 
 ## Dashboard Name
 
-ASR AI Reliability - Service Health and Incident Evidence
+AS AI Reliability - Service Health and Incident Evidence
 
 ---
 
@@ -28,8 +28,8 @@ ASR AI Reliability - Service Health and Incident Evidence
 Recommended dashboard filters:
 
 - Environment: poc
-- Service Name: asr-ai-quality-service
-- Model Name: asr-quality-classifier
+- Service Name: as-ai-quality-service
+- Model Name: as-quality-classifier
 - Model Version: v1.0.3
 - Kubernetes Namespace: ai-reliability-poc
 
@@ -100,7 +100,7 @@ Signals:
 
 Expected Values:
 
-- model_name: asr-quality-classifier
+- model_name: as-quality-classifier
 - model_version: v1.0.3
 - artifact_loaded: true
 
@@ -162,9 +162,9 @@ Signals:
 - trace_id
 - request_id
 - service.name
-- asr.model_version
-- asr.audit_logged
-- asr.prediction_status
+- as.model_version
+- as.audit_logged
+- as.prediction_status
 
 Incident Use:
 Use this panel to connect Dynatrace traces to ServiceNow incident evidence.

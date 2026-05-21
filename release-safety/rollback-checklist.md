@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This checklist defines how to safely roll back ASR AI quality service traffic during a failed release or failed canary.
+This checklist defines how to safely roll back AS AI quality service traffic during a failed release or failed canary.
 
 ---
 
@@ -93,7 +93,7 @@ curl -s -X POST http://139.144.255.192/predict \
   -H "x-trace-id: rollback-validation-trace-001" \
   -d '{
     "asset_id": "asset-rollback-1001",
-    "site_id": "site-asr-poc-001",
+    "site_id": "site-as-poc-001",
     "sensor_score": 91,
     "audit_required": true
   }' | python -m json.tool

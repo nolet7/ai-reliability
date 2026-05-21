@@ -1,7 +1,7 @@
 -- database/drift-simulation.sql
 --
 -- Purpose:
--- Simulates unauthorized PostgreSQL schema drift for the ASR AI Reliability POC.
+-- Simulates unauthorized PostgreSQL schema drift for the AS AI Reliability POC.
 --
 -- This file intentionally changes the live database outside the approved Git schema.
 -- Atlas should detect this drift because database/schema-atlas.sql does not contain

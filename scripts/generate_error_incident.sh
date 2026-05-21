@@ -3,7 +3,7 @@
 # scripts/generate_error_incident.sh
 #
 # Purpose:
-# Generates controlled HTTP 500 errors against the ASR AI quality service.
+# Generates controlled HTTP 500 errors against the AS AI quality service.
 #
 # Why it matters:
 # This script will later be used to generate error traffic for Dynatrace problem
@@ -22,10 +22,10 @@ echo
 for i in $(seq 1 "${REQUEST_COUNT}"); do
   echo "Error request ${i}/${REQUEST_COUNT}"
 
-  HTTP_STATUS="$(curl -s -o /tmp/asr_error_response.json -w "%{http_code}" "${BASE_URL}/simulate-error")"
+  HTTP_STATUS="$(curl -s -o /tmp/as_error_response.json -w "%{http_code}" "${BASE_URL}/simulate-error")"
 
   echo "HTTP status: ${HTTP_STATUS}"
-  cat /tmp/asr_error_response.json | python -m json.tool || cat /tmp/asr_error_response.json
+  cat /tmp/as_error_response.json | python -m json.tool || cat /tmp/as_error_response.json
   echo
 
   if [ "${HTTP_STATUS}" != "500" ]; then
@@ -34,6 +34,6 @@ for i in $(seq 1 "${REQUEST_COUNT}"); do
   fi
 done
 
-rm -f /tmp/asr_error_response.json
+rm -f /tmp/as_error_response.json
 
 echo "Error simulation completed successfully."

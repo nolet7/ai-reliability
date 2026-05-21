@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file defines how ASR AI Reliability POC evidence maps into a ServiceNow incident.
+This file defines how AS AI Reliability POC evidence maps into a ServiceNow incident.
 
 The goal is to make incidents actionable, not generic.
 
@@ -33,10 +33,10 @@ assignment_group:
 SRE Platform Operations
 
 cmdb_ci:
-ASR AI Quality Service
+AS AI Quality Service
 
 business_service:
-ASR AI Reliability Platform
+AS AI Reliability Platform
 
 category:
 Application Reliability
@@ -58,16 +58,16 @@ New
 
 ---
 
-## ASR Reliability Evidence Fields
+## AS Reliability Evidence Fields
 
 service_name:
-asr-ai-quality-service
+as-ai-quality-service
 
 environment:
 poc
 
 model_name:
-asr-quality-classifier
+as-quality-classifier
 
 model_version:
 v1.0.3
@@ -76,13 +76,13 @@ kubernetes_namespace:
 ai-reliability-poc
 
 kubernetes_deployment:
-asr-ai-quality-service
+as-ai-quality-service
 
 load_balancer_ip:
 139.144.255.192
 
 runbook_url:
-runbooks/asr-ai-quality-service.md
+runbooks/as-ai-quality-service.md
 
 ---
 
@@ -91,7 +91,7 @@ runbooks/asr-ai-quality-service.md
 When the incident source is Dynatrace, include:
 
 dynatrace_service_name:
-asr-ai-quality-service
+as-ai-quality-service
 
 dynatrace_service_url:
 Paste Dynatrace service URL here.
@@ -130,7 +130,7 @@ event_type:
 schema_drift
 
 database:
-asr_ai_poc
+as_ai_poc
 
 approved_schema:
 database/schema-atlas.sql
@@ -157,13 +157,13 @@ namespace:
 ai-reliability-poc
 
 deployment:
-asr-ai-quality-service
+as-ai-quality-service
 
 pods:
 Use kubectl get pods -n ai-reliability-poc -o wide
 
 logs:
-Use kubectl logs -n ai-reliability-poc -l app.kubernetes.io/name=asr-ai-quality-service --tail=100
+Use kubectl logs -n ai-reliability-poc -l app.kubernetes.io/name=as-ai-quality-service --tail=100
 
 symptom:
 Pod not ready, container restart, failed readiness probe, failed liveness probe, or image pull failure.
@@ -172,26 +172,26 @@ Pod not ready, container restart, failed readiness probe, failed liveness probe,
 
 ## Example Dynatrace Incident Short Description
 
-Dynatrace detected high error rate on asr-ai-quality-service in poc
+Dynatrace detected high error rate on as-ai-quality-service in poc
 
 ---
 
 ## Example Atlas Incident Short Description
 
-Atlas detected PostgreSQL schema drift for asr_ai_poc in poc
+Atlas detected PostgreSQL schema drift for as_ai_poc in poc
 
 ---
 
 ## Example Incident Description Template
 
 Service:
-asr-ai-quality-service
+as-ai-quality-service
 
 Environment:
 poc
 
 Model:
-asr-quality-classifier v1.0.3
+as-quality-classifier v1.0.3
 
 Symptom:
 Describe the observed reliability issue.
@@ -212,4 +212,4 @@ Recommended Action:
 Follow the runbook, validate recent changes, review Dynatrace evidence, check Kubernetes logs, and confirm whether rollback or schema remediation is required.
 
 Runbook:
-runbooks/asr-ai-quality-service.md
+runbooks/as-ai-quality-service.md

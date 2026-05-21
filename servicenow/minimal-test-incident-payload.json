@@ -1,6 +1,6 @@
 {
-  "short_description": "ASR AI Reliability POC minimal test incident",
-  "description": "Minimal incident created by ASR AI Reliability POC automation to validate ServiceNow Table API incident creation.",
+  "short_description": "AS AI Reliability POC minimal test incident",
+  "description": "Minimal incident created by AS AI Reliability POC automation to validate ServiceNow Table API incident creation.",
   "impact": "3",
   "urgency": "3"
 }

@@ -1,8 +1,8 @@
-# App: asr-ai-quality-service
+# App: as-ai-quality-service
 
 ## Purpose
 
-This folder contains the FastAPI application for the ASR AI Reliability Incident Automation POC.
+This folder contains the FastAPI application for the AS AI Reliability Incident Automation POC.
 
 The app simulates an AI quality prediction service and provides SRE reliability endpoints for:
 

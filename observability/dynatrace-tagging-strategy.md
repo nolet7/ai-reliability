@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file defines the tagging strategy for the ASR AI Reliability Incident Automation POC.
+This file defines the tagging strategy for the AS AI Reliability Incident Automation POC.
 
 Tags help Dynatrace, ServiceNow, dashboards, SLOs, and incident routing understand:
 
@@ -16,27 +16,27 @@ Tags help Dynatrace, ServiceNow, dashboards, SLOs, and incident routing understa
 
 ## Required Tags
 
-service_name: asr-ai-quality-service
+service_name: as-ai-quality-service
 environment: poc
 owner: sre-platform-team
-model_name: asr-quality-classifier
+model_name: as-quality-classifier
 model_version: v1.0.3
 kubernetes_namespace: ai-reliability-poc
 component: inference-api
-application: asr-ai-reliability
-ci_name: ASR AI Quality Service
+application: as-ai-reliability
+ci_name: AS AI Quality Service
 
 ---
 
 ## Kubernetes Labels Used for Tagging
 
-app.kubernetes.io/name: asr-ai-quality-service
-app.kubernetes.io/part-of: asr-ai-reliability
+app.kubernetes.io/name: as-ai-quality-service
+app.kubernetes.io/part-of: as-ai-reliability
 app.kubernetes.io/component: inference-api
 app.kubernetes.io/version: v1.0.3
 environment: poc
 owner: sre-platform-team
-model_name: asr-quality-classifier
+model_name: as-quality-classifier
 model_version: v1.0.3
 
 ---
@@ -45,12 +45,12 @@ model_version: v1.0.3
 
 Dynatrace should map the service as:
 
-service.name: asr-ai-quality-service
-service.namespace: asr-ai-reliability
+service.name: as-ai-quality-service
+service.namespace: as-ai-reliability
 deployment.environment: poc
 service.version: v1.0.3
 team.owner: sre-platform-team
-model.name: asr-quality-classifier
+model.name: as-quality-classifier
 model.version: v1.0.3
 
 ---
@@ -59,13 +59,13 @@ model.version: v1.0.3
 
 When Dynatrace creates a ServiceNow incident, include:
 
-service_name: asr-ai-quality-service
+service_name: as-ai-quality-service
 environment: poc
 assignment_group: SRE Platform Operations
-configuration_item: ASR AI Quality Service
-model_name: asr-quality-classifier
+configuration_item: AS AI Quality Service
+model_name: as-quality-classifier
 model_version: v1.0.3
-runbook_url: runbooks/asr-ai-quality-service.md
+runbook_url: runbooks/as-ai-quality-service.md
 
 ---
 

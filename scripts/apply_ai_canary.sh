@@ -3,7 +3,7 @@
 # scripts/apply_ai_canary.sh
 #
 # Purpose:
-# Applies ASR AI canary routing through Istio.
+# Applies AS AI canary routing through Istio.
 #
 # This script:
 # - Scales v2 canary deployment to 1 replica
@@ -19,15 +19,15 @@ set -euo pipefail
 NAMESPACE="${NAMESPACE:-ai-reliability-poc}"
 
 echo "============================================================"
-echo "ASR AI Reliability POC - Apply Canary Routing"
+echo "AS AI Reliability POC - Apply Canary Routing"
 echo "============================================================"
 
 echo "Step 1: Scaling v2 canary deployment to 1 replica..."
-kubectl scale deployment asr-ai-quality-service-v2 -n "${NAMESPACE}" --replicas=1
+kubectl scale deployment as-ai-quality-service-v2 -n "${NAMESPACE}" --replicas=1
 
 echo
 echo "Step 2: Waiting for v2 rollout..."
-kubectl rollout status deployment/asr-ai-quality-service-v2 -n "${NAMESPACE}"
+kubectl rollout status deployment/as-ai-quality-service-v2 -n "${NAMESPACE}"
 
 echo
 echo "Step 3: Applying 90/10 canary VirtualService..."
@@ -35,7 +35,7 @@ kubectl apply -f istio/virtual-service-canary.yaml
 
 echo
 echo "Step 4: Current Istio VirtualService..."
-kubectl describe virtualservice asr-ai-quality-virtual-service -n "${NAMESPACE}"
+kubectl describe virtualservice as-ai-quality-virtual-service -n "${NAMESPACE}"
 
 echo
 echo "Step 5: Current pods..."

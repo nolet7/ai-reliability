@@ -3,7 +3,7 @@
 # scripts/run_release_gates.sh
 #
 # Purpose:
-# Runs ASR AI Reliability POC release gates.
+# Runs AS AI Reliability POC release gates.
 #
 # These gates validate:
 # - Kubernetes rollout health
@@ -20,17 +20,17 @@
 set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-ai-reliability-poc}"
-APP_NAME="${APP_NAME:-asr-ai-quality-service}"
-ASR_LB_IP="${ASR_LB_IP:-139.144.255.192}"
+APP_NAME="${APP_NAME:-as-ai-quality-service}"
+AS_LB_IP="${AS_LB_IP:-139.144.255.192}"
 ISTIO_INGRESS_IP="${ISTIO_INGRESS_IP:-139.144.255.92}"
 EXPECTED_MODEL_VERSION="${EXPECTED_MODEL_VERSION:-v1.0.3}"
 TRACE_ID="${TRACE_ID:-release-gate-trace-001}"
 
-BASE_URL="http://${ASR_LB_IP}"
+BASE_URL="http://${AS_LB_IP}"
 ISTIO_URL="http://${ISTIO_INGRESS_IP}"
 
 echo "============================================================"
-echo "ASR AI Reliability POC - Release Gate Validation"
+echo "AS AI Reliability POC - Release Gate Validation"
 echo "============================================================"
 echo "Namespace: ${NAMESPACE}"
 echo "Application: ${APP_NAME}"
@@ -106,7 +106,7 @@ curl -s -X POST "${BASE_URL}/predict" \
   -H "x-trace-id: ${TRACE_ID}" \
   -d '{
     "asset_id": "asset-release-gate-1001",
-    "site_id": "site-asr-poc-001",
+    "site_id": "site-as-poc-001",
     "sensor_score": 91.5,
     "audit_required": true
   }' > "${PREDICT_FILE}"
@@ -126,7 +126,7 @@ with open(path, "r", encoding="utf-8") as f:
 if data.get("trace_id") != expected_trace_id:
     raise SystemExit("trace_id mismatch")
 
-if data.get("service_name") != "asr-ai-quality-service":
+if data.get("service_name") != "as-ai-quality-service":
     raise SystemExit("service_name mismatch")
 
 if data.get("prediction_status") != "success":

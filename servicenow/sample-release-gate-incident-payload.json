@@ -1,13 +1,13 @@
 {
-  "short_description": "CI/CD release gate failed for asr-ai-quality-service in poc",
-  "description": "A release safety gate failed for the ASR AI quality service.\n\nService: asr-ai-quality-service\nEnvironment: poc\nModel: asr-quality-classifier\nModel Version: v1.0.3\nNamespace: ai-reliability-poc\n\nPossible Failed Gate:\n- Health check gate\n- Model readiness gate\n- Prediction audit gate\n- Atlas schema drift gate\n- Kubernetes readiness gate\n- Rollback readiness gate\n\nRecommended Action:\nReview release evidence, validate /health/live, /health/ready, /health/model, confirm audit_logged=true for prediction tests, run Atlas drift check, inspect Kubernetes rollout status, and confirm rollback script readiness.",
+  "short_description": "CI/CD release gate failed for as-ai-quality-service in poc",
+  "description": "A release safety gate failed for the AS AI quality service.\n\nService: as-ai-quality-service\nEnvironment: poc\nModel: as-quality-classifier\nModel Version: v1.0.3\nNamespace: ai-reliability-poc\n\nPossible Failed Gate:\n- Health check gate\n- Model readiness gate\n- Prediction audit gate\n- Atlas schema drift gate\n- Kubernetes readiness gate\n- Rollback readiness gate\n\nRecommended Action:\nReview release evidence, validate /health/live, /health/ready, /health/model, confirm audit_logged=true for prediction tests, run Atlas drift check, inspect Kubernetes rollout status, and confirm rollback script readiness.",
   "assignment_group": "SRE Platform Operations",
-  "cmdb_ci": "ASR AI Quality Service",
-  "business_service": "ASR AI Reliability Platform",
+  "cmdb_ci": "AS AI Quality Service",
+  "business_service": "AS AI Reliability Platform",
   "category": "Release Reliability",
   "subcategory": "Release Gate Failure",
   "impact": "2",
   "urgency": "2",
-  "correlation_id": "release-gate-asr-ai-quality-service-poc-example",
-  "work_notes": "Generated from ASR AI Reliability POC release gate evidence. Attach CI/CD logs, validation script output, and rollback evidence during real incident creation."
+  "correlation_id": "release-gate-as-ai-quality-service-poc-example",
+  "work_notes": "Generated from AS AI Reliability POC release gate evidence. Attach CI/CD logs, validation script output, and rollback evidence during real incident creation."
 }

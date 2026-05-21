@@ -37,7 +37,7 @@ if [ ! -f "${PAYLOAD_FILE}" ]; then
 fi
 
 echo "============================================================"
-echo "ASR AI Reliability POC - ServiceNow Incident Creation"
+echo "AS AI Reliability POC - ServiceNow Incident Creation"
 echo "============================================================"
 echo "Payload file: ${PAYLOAD_FILE}"
 echo "Dry run: ${DRY_RUN}"
