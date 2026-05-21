@@ -1,0 +1,124 @@
+name: 04 - Dynatrace Validation Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_query:
+        description: "Dynatrace service name search text"
+        required: false
+        default: "as-ai-quality-service"
+      lookback_minutes:
+        description: "Dynatrace validation lookback window in minutes"
+        required: false
+        default: "60"
+      require_problem_free:
+        description: "Fail if open Dynatrace problems exist for the service"
+        required: false
+        default: "true"
+
+  workflow_run:
+    workflows:
+      - "03 - Runtime Release Gate"
+    types:
+      - completed
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  dynatrace-validation:
+    name: Validate Dynatrace observability evidence
+    runs-on: ubuntu-latest
+
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    env:
+      DYNATRACE_ENV_URL: ${{ secrets.DYNATRACE_ENV_URL }}
+      DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
+
+      APP_NAME: ${{ vars.APP_NAME }}
+      NAMESPACE: ${{ vars.NAMESPACE }}
+
+      DYNATRACE_SERVICE_QUERY: ${{ vars.DYNATRACE_SERVICE_QUERY }}
+      DYNATRACE_LOOKBACK_MINUTES: ${{ vars.DYNATRACE_LOOKBACK_MINUTES }}
+      DYNATRACE_MIN_SERVICE_ENTITIES: ${{ vars.DYNATRACE_MIN_SERVICE_ENTITIES }}
+      DYNATRACE_REQUIRE_PROBLEM_FREE: ${{ vars.DYNATRACE_REQUIRE_PROBLEM_FREE }}
+      DYNATRACE_REQUIRE_METRIC_DATA: ${{ vars.DYNATRACE_REQUIRE_METRIC_DATA }}
+      DYNATRACE_METRIC_SELECTOR: ${{ vars.DYNATRACE_METRIC_SELECTOR }}
+
+      INPUT_SERVICE_QUERY: ${{ inputs.service_query }}
+      INPUT_LOOKBACK_MINUTES: ${{ inputs.lookback_minutes }}
+      INPUT_REQUIRE_PROBLEM_FREE: ${{ inputs.require_problem_free }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl python3
+
+      - name: Normalize Dynatrace validation variables
+        run: |
+          if [ -z "${APP_NAME:-}" ]; then
+            echo "APP_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${NAMESPACE:-}" ]; then
+            echo "NAMESPACE=ai-reliability-poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -n "${INPUT_SERVICE_QUERY:-}" ]; then
+            echo "DYNATRACE_SERVICE_QUERY=$INPUT_SERVICE_QUERY" >> "$GITHUB_ENV"
+          elif [ -z "${DYNATRACE_SERVICE_QUERY:-}" ]; then
+            echo "DYNATRACE_SERVICE_QUERY=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -n "${INPUT_LOOKBACK_MINUTES:-}" ]; then
+            echo "DYNATRACE_LOOKBACK_MINUTES=$INPUT_LOOKBACK_MINUTES" >> "$GITHUB_ENV"
+          elif [ -z "${DYNATRACE_LOOKBACK_MINUTES:-}" ]; then
+            echo "DYNATRACE_LOOKBACK_MINUTES=60" >> "$GITHUB_ENV"
+          fi
+
+          if [ -n "${INPUT_REQUIRE_PROBLEM_FREE:-}" ]; then
+            echo "DYNATRACE_REQUIRE_PROBLEM_FREE=$INPUT_REQUIRE_PROBLEM_FREE" >> "$GITHUB_ENV"
+          elif [ -z "${DYNATRACE_REQUIRE_PROBLEM_FREE:-}" ]; then
+            echo "DYNATRACE_REQUIRE_PROBLEM_FREE=true" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${DYNATRACE_MIN_SERVICE_ENTITIES:-}" ]; then
+            echo "DYNATRACE_MIN_SERVICE_ENTITIES=1" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${DYNATRACE_REQUIRE_METRIC_DATA:-}" ]; then
+            echo "DYNATRACE_REQUIRE_METRIC_DATA=false" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${DYNATRACE_METRIC_SELECTOR:-}" ]; then
+            echo "DYNATRACE_METRIC_SELECTOR=builtin:service.requestCount.total" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run Dynatrace validation gate
+        run: |
+          chmod +x scripts/observability/dynatrace_validation_gate.sh
+          scripts/observability/dynatrace_validation_gate.sh
+
+      - name: Publish Dynatrace validation summary
+        if: always()
+        run: |
+          if [ -f reports/dynatrace-validation/dynatrace-validation-summary.md ]; then
+            cat reports/dynatrace-validation/dynatrace-validation-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Dynatrace validation summary was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Dynatrace validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-5-dynatrace-validation-evidence
+          path: reports/dynatrace-validation/
