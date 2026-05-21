@@ -1,0 +1,75 @@
+name: 00 - Environment Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  environment-check:
+    name: Validate GitHub Actions Environment
+    runs-on: ubuntu-latest
+    environment: poc
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check repository variables
+        run: |
+          echo "APP_NAME=${{ vars.APP_NAME }}"
+          echo "NAMESPACE=${{ vars.NAMESPACE }}"
+          echo "DOCKER_IMAGE=${{ vars.DOCKER_IMAGE }}"
+          echo "IMAGE_TAG=${{ vars.IMAGE_TAG }}"
+          echo "K8S_CONTEXT_NAME=${{ vars.K8S_CONTEXT_NAME }}"
+          echo "AS_LB_IP=${{ vars.AS_LB_IP }}"
+          echo "ISTIO_INGRESS_IP=${{ vars.ISTIO_INGRESS_IP }}"
+          echo "EXPECTED_MODEL_VERSION=${{ vars.EXPECTED_MODEL_VERSION }}"
+
+      - name: Check required secrets are present
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+          DT_OTLP_ENDPOINT: ${{ secrets.DT_OTLP_ENDPOINT }}
+          DT_OTLP_TRACES_ENDPOINT: ${{ secrets.DT_OTLP_TRACES_ENDPOINT }}
+          DT_OTLP_HEADERS: ${{ secrets.DT_OTLP_HEADERS }}
+          DT_OTLP_PROTOCOL: ${{ secrets.DT_OTLP_PROTOCOL }}
+          SERVICENOW_INSTANCE_URL: ${{ secrets.SERVICENOW_INSTANCE_URL }}
+          SERVICENOW_USERNAME: ${{ secrets.SERVICENOW_USERNAME }}
+          SERVICENOW_PASSWORD: ${{ secrets.SERVICENOW_PASSWORD }}
+        run: |
+          check_secret() {
+            name="$1"
+            value="$2"
+            if [ -z "$value" ]; then
+              echo "Missing secret: $name"
+              exit 1
+            else
+              echo "Secret present: $name"
+            fi
+          }
+
+          check_secret "DOCKERHUB_USERNAME" "$DOCKERHUB_USERNAME"
+          check_secret "DOCKERHUB_TOKEN" "$DOCKERHUB_TOKEN"
+          check_secret "KUBECONFIG_B64" "$KUBECONFIG_B64"
+          check_secret "DT_OTLP_ENDPOINT" "$DT_OTLP_ENDPOINT"
+          check_secret "DT_OTLP_TRACES_ENDPOINT" "$DT_OTLP_TRACES_ENDPOINT"
+          check_secret "DT_OTLP_HEADERS" "$DT_OTLP_HEADERS"
+          check_secret "DT_OTLP_PROTOCOL" "$DT_OTLP_PROTOCOL"
+          check_secret "SERVICENOW_INSTANCE_URL" "$SERVICENOW_INSTANCE_URL"
+          check_secret "SERVICENOW_USERNAME" "$SERVICENOW_USERNAME"
+          check_secret "SERVICENOW_PASSWORD" "$SERVICENOW_PASSWORD"
+
+      - name: Validate kubeconfig can be decoded
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+        run: |
+          mkdir -p ~/.kube
+          echo "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
+          test -s ~/.kube/config
+          echo "Kubeconfig decoded successfully."
+
+      - name: Validate documentation exists
+        run: |
+          test -f .github/actions-environment-setup.md
+          test -f .github/workflows/release-gates.yml
+          echo "Environment setup documentation exists."
