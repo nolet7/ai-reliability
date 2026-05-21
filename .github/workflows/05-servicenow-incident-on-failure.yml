@@ -1,0 +1,152 @@
+name: 05 - ServiceNow Incident on Failure
+
+on:
+  workflow_dispatch:
+    inputs:
+      failed_workflow_name:
+        description: "Workflow name to simulate or report as failed"
+        required: false
+        default: "Manual ServiceNow Incident Test"
+      failed_workflow_conclusion:
+        description: "Failure conclusion"
+        required: false
+        default: "failure"
+      failed_workflow_run_url:
+        description: "Optional failed workflow URL"
+        required: false
+        default: ""
+
+  workflow_run:
+    workflows:
+      - "03 - Runtime Release Gate"
+      - "04 - Dynatrace Validation Gate"
+    types:
+      - completed
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  servicenow-incident:
+    name: Create or update ServiceNow incident
+    runs-on: ubuntu-latest
+
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'failure' ||
+      github.event.workflow_run.conclusion == 'timed_out' ||
+      github.event.workflow_run.conclusion == 'cancelled'
+
+    env:
+      SERVICENOW_ENABLE_INCIDENTS: ${{ vars.SERVICENOW_ENABLE_INCIDENTS }}
+      SERVICENOW_INSTANCE_URL: ${{ secrets.SERVICENOW_INSTANCE_URL }}
+      SERVICENOW_USERNAME: ${{ secrets.SERVICENOW_USERNAME }}
+      SERVICENOW_PASSWORD: ${{ secrets.SERVICENOW_PASSWORD }}
+
+      SERVICENOW_ASSIGNMENT_GROUP: ${{ vars.SERVICENOW_ASSIGNMENT_GROUP }}
+      SERVICENOW_BUSINESS_SERVICE: ${{ vars.SERVICENOW_BUSINESS_SERVICE }}
+      SERVICENOW_CONFIGURATION_ITEM: ${{ vars.SERVICENOW_CONFIGURATION_ITEM }}
+      SERVICENOW_IMPACT: ${{ vars.SERVICENOW_IMPACT }}
+      SERVICENOW_URGENCY: ${{ vars.SERVICENOW_URGENCY }}
+      SERVICENOW_SEVERITY: ${{ vars.SERVICENOW_SEVERITY }}
+      SERVICENOW_CATEGORY: ${{ vars.SERVICENOW_CATEGORY }}
+      SERVICENOW_SUBCATEGORY: ${{ vars.SERVICENOW_SUBCATEGORY }}
+
+      APP_NAME: ${{ vars.APP_NAME }}
+      NAMESPACE: ${{ vars.NAMESPACE }}
+      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+      EXPECTED_MODEL_VERSION: ${{ vars.EXPECTED_MODEL_VERSION }}
+
+      INPUT_FAILED_WORKFLOW_NAME: ${{ inputs.failed_workflow_name }}
+      INPUT_FAILED_WORKFLOW_CONCLUSION: ${{ inputs.failed_workflow_conclusion }}
+      INPUT_FAILED_WORKFLOW_RUN_URL: ${{ inputs.failed_workflow_run_url }}
+
+      TRIGGER_WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+      TRIGGER_WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+      TRIGGER_WORKFLOW_RUN_URL: ${{ github.event.workflow_run.html_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Normalize incident context
+        run: |
+          if [ -z "${SERVICENOW_ENABLE_INCIDENTS:-}" ]; then
+            echo "SERVICENOW_ENABLE_INCIDENTS=true" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${APP_NAME:-}" ]; then
+            echo "APP_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${NAMESPACE:-}" ]; then
+            echo "NAMESPACE=ai-reliability-poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ENVIRONMENT:-}" ]; then
+            echo "ENVIRONMENT=poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${EXPECTED_MODEL_VERSION:-}" ]; then
+            echo "EXPECTED_MODEL_VERSION=v1.0.3" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICENOW_IMPACT:-}" ]; then
+            echo "SERVICENOW_IMPACT=2" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICENOW_URGENCY:-}" ]; then
+            echo "SERVICENOW_URGENCY=2" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICENOW_SEVERITY:-}" ]; then
+            echo "SERVICENOW_SEVERITY=2" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICENOW_CATEGORY:-}" ]; then
+            echo "SERVICENOW_CATEGORY=software" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICENOW_SUBCATEGORY:-}" ]; then
+            echo "SERVICENOW_SUBCATEGORY=release" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICENOW_BUSINESS_SERVICE:-}" ]; then
+            echo "SERVICENOW_BUSINESS_SERVICE=AS AI Reliability POC" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICENOW_CONFIGURATION_ITEM:-}" ]; then
+            echo "SERVICENOW_CONFIGURATION_ITEM=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "FAILED_WORKFLOW_NAME=${INPUT_FAILED_WORKFLOW_NAME:-Manual ServiceNow Incident Test}" >> "$GITHUB_ENV"
+            echo "FAILED_WORKFLOW_CONCLUSION=${INPUT_FAILED_WORKFLOW_CONCLUSION:-failure}" >> "$GITHUB_ENV"
+            echo "FAILED_WORKFLOW_RUN_URL=${INPUT_FAILED_WORKFLOW_RUN_URL:-}" >> "$GITHUB_ENV"
+          else
+            echo "FAILED_WORKFLOW_NAME=${TRIGGER_WORKFLOW_NAME}" >> "$GITHUB_ENV"
+            echo "FAILED_WORKFLOW_CONCLUSION=${TRIGGER_WORKFLOW_CONCLUSION}" >> "$GITHUB_ENV"
+            echo "FAILED_WORKFLOW_RUN_URL=${TRIGGER_WORKFLOW_RUN_URL}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run ServiceNow incident automation
+        run: |
+          chmod +x scripts/incident/servicenow_incident_on_failure.py
+          python3 scripts/incident/servicenow_incident_on_failure.py
+
+      - name: Publish ServiceNow incident summary
+        if: always()
+        run: |
+          if [ -f reports/servicenow-incident/servicenow-incident-summary.md ]; then
+            cat reports/servicenow-incident/servicenow-incident-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ServiceNow incident summary was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload ServiceNow incident evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-6-servicenow-incident-evidence
+          path: reports/servicenow-incident/
