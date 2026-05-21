@@ -71,6 +71,20 @@ jobs:
             echo "SLO_LATENCY_THRESHOLD_MS=1000" >> "$GITHUB_ENV"
           fi
 
+      - name: Validate Dynatrace secret presence
+        run: |
+          if [ -z "${DYNATRACE_ENV_URL:-}" ]; then
+            echo "DYNATRACE_ENV_URL is missing or empty."
+            exit 1
+          fi
+
+          if [ -z "${DYNATRACE_API_TOKEN:-}" ]; then
+            echo "DYNATRACE_API_TOKEN is missing or empty."
+            exit 1
+          fi
+
+          echo "Dynatrace secrets are present. Values are masked and will not be printed."
+
       - name: Publish SLO catalog metrics to Dynatrace
         run: |
           chmod +x scripts/observability/publish_slo_catalog_metrics_to_dynatrace.py
