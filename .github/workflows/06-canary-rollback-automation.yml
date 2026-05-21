@@ -1,0 +1,161 @@
+name: 06 - Canary Rollback Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Traffic action: canary, rollback, or promote"
+        required: true
+        default: "canary"
+        type: choice
+        options:
+          - canary
+          - rollback
+          - promote
+      canary_v1_weight:
+        description: "v1 traffic percentage for canary mode"
+        required: false
+        default: "80"
+      canary_v2_weight:
+        description: "v2 traffic percentage for canary mode"
+        required: false
+        default: "20"
+      validation_requests:
+        description: "Number of requests to validate route behavior"
+        required: false
+        default: "30"
+      expected_primary_model_version:
+        description: "Expected v1 model version for rollback validation"
+        required: false
+        default: "v1.0.3"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  canary-rollback:
+    name: Apply and validate Istio traffic action
+    runs-on: ubuntu-latest
+
+    env:
+      KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+
+      MODE: ${{ inputs.mode }}
+
+      NAMESPACE: ${{ vars.NAMESPACE }}
+      APP_NAME: ${{ vars.APP_NAME }}
+      SERVICE_NAME: ${{ vars.SERVICE_NAME }}
+
+      KUBE_CONTEXT: ${{ vars.KUBE_CONTEXT }}
+      ISTIO_INGRESS_IP: ${{ vars.ISTIO_INGRESS_IP }}
+      PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+
+      ISTIO_GATEWAY_NAME: ${{ vars.ISTIO_GATEWAY_NAME }}
+      ISTIO_VIRTUAL_SERVICE_NAME: ${{ vars.ISTIO_VIRTUAL_SERVICE_NAME }}
+      ISTIO_DESTINATION_RULE_NAME: ${{ vars.ISTIO_DESTINATION_RULE_NAME }}
+
+      ROUTE_TEST_PATH: ${{ vars.ROUTE_TEST_PATH }}
+
+      CANARY_V1_WEIGHT: ${{ inputs.canary_v1_weight }}
+      CANARY_V2_WEIGHT: ${{ inputs.canary_v2_weight }}
+      VALIDATION_REQUESTS: ${{ inputs.validation_requests }}
+      EXPECTED_PRIMARY_MODEL_VERSION: ${{ inputs.expected_primary_model_version }}
+
+      CANARY_TOLERANCE_PERCENT: ${{ vars.CANARY_TOLERANCE_PERCENT }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+
+      - name: Install validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl python3
+
+      - name: Normalize canary rollback variables
+        run: |
+          if [ -z "${NAMESPACE:-}" ]; then
+            echo "NAMESPACE=ai-reliability-poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${APP_NAME:-}" ]; then
+            echo "APP_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICE_NAME:-}" ]; then
+            echo "SERVICE_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${KUBE_CONTEXT:-}" ]; then
+            echo "KUBE_CONTEXT=lke605802-ctx" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ISTIO_INGRESS_IP:-}" ]; then
+            echo "ISTIO_INGRESS_IP=139.144.255.92" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${PUBLIC_BASE_URL:-}" ]; then
+            echo "PUBLIC_BASE_URL=http://139.144.255.92" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ISTIO_GATEWAY_NAME:-}" ]; then
+            echo "ISTIO_GATEWAY_NAME=as-ai-quality-service-gateway" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ISTIO_VIRTUAL_SERVICE_NAME:-}" ]; then
+            echo "ISTIO_VIRTUAL_SERVICE_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ISTIO_DESTINATION_RULE_NAME:-}" ]; then
+            echo "ISTIO_DESTINATION_RULE_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ROUTE_TEST_PATH:-}" ]; then
+            echo "ROUTE_TEST_PATH=/model" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${CANARY_TOLERANCE_PERCENT:-}" ]; then
+            echo "CANARY_TOLERANCE_PERCENT=35" >> "$GITHUB_ENV"
+          fi
+
+      - name: Decode kubeconfig
+        run: |
+          if [ -z "${KUBECONFIG_B64:-}" ]; then
+            echo "KUBECONFIG_B64 secret is missing."
+            exit 1
+          fi
+
+          mkdir -p "$HOME/.kube"
+          printf "%s" "$KUBECONFIG_B64" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+          kubectl config get-contexts
+          kubectl config use-context "$KUBE_CONTEXT"
+          kubectl cluster-info
+
+      - name: Apply and validate traffic action
+        run: |
+          chmod +x scripts/traffic/canary_rollback_automation.sh
+          scripts/traffic/canary_rollback_automation.sh
+
+      - name: Publish canary rollback summary
+        if: always()
+        run: |
+          if [ -f reports/canary-rollback/canary-rollback-summary.md ]; then
+            cat reports/canary-rollback/canary-rollback-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Canary rollback summary was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload canary rollback evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-7-canary-rollback-evidence
+          path: reports/canary-rollback/

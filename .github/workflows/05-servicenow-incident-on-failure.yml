@@ -20,6 +20,7 @@ on:
     workflows:
       - "03 - Runtime Release Gate"
       - "04 - Dynatrace Validation Gate"
+      - "06 - Canary Rollback Automation"
     types:
       - completed
 
