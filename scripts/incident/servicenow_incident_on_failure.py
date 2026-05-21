@@ -38,6 +38,18 @@ def env(name: str, default: str = "") -> str:
     return os.getenv(name, default).strip()
 
 
+def optional_servicenow_ref(name: str) -> str:
+    """
+    GitHub Actions variables cannot be empty.
+    Use SKIP, NONE, NULL, N/A, or __NONE__ when you do not want to send
+    an optional ServiceNow reference field like business_service or cmdb_ci.
+    """
+    value = env(name)
+    if value.upper() in {"SKIP", "NONE", "NULL", "N/A", "__NONE__"}:
+        return ""
+    return value
+
+
 def write_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
 
@@ -390,9 +402,9 @@ def main() -> int:
         f"{context['app_name']} - {context['environment']} - {context['workflow_name']}"
     )
 
-    assignment_group = env("SERVICENOW_ASSIGNMENT_GROUP")
-    business_service = env("SERVICENOW_BUSINESS_SERVICE")
-    configuration_item = env("SERVICENOW_CONFIGURATION_ITEM")
+    assignment_group = optional_servicenow_ref("SERVICENOW_ASSIGNMENT_GROUP")
+    business_service = optional_servicenow_ref("SERVICENOW_BUSINESS_SERVICE")
+    configuration_item = optional_servicenow_ref("SERVICENOW_CONFIGURATION_ITEM")
 
     base_payload: Dict[str, Any] = {
         "short_description": short_description,

@@ -112,14 +112,6 @@ jobs:
             echo "SERVICENOW_SUBCATEGORY=release" >> "$GITHUB_ENV"
           fi
 
-          if [ -z "${SERVICENOW_BUSINESS_SERVICE:-}" ]; then
-            echo "SERVICENOW_BUSINESS_SERVICE=AS AI Reliability POC" >> "$GITHUB_ENV"
-          fi
-
-          if [ -z "${SERVICENOW_CONFIGURATION_ITEM:-}" ]; then
-            echo "SERVICENOW_CONFIGURATION_ITEM=as-ai-quality-service" >> "$GITHUB_ENV"
-          fi
-
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "FAILED_WORKFLOW_NAME=${INPUT_FAILED_WORKFLOW_NAME:-Manual ServiceNow Incident Test}" >> "$GITHUB_ENV"
             echo "FAILED_WORKFLOW_CONCLUSION=${INPUT_FAILED_WORKFLOW_CONCLUSION:-failure}" >> "$GITHUB_ENV"
