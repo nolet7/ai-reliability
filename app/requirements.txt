@@ -1,0 +1,20 @@
+# FastAPI provides the web API framework for the AI reliability service.
+fastapi==0.115.6
+
+# Uvicorn runs the FastAPI application.
+uvicorn[standard]==0.34.0
+
+# Pydantic validates request and response data models.
+pydantic==2.10.4
+
+# OpenTelemetry API provides tracing interfaces.
+opentelemetry-api==1.29.0
+
+# OpenTelemetry SDK provides tracing implementation.
+opentelemetry-sdk==1.29.0
+
+# FastAPI instrumentation automatically creates traces for HTTP requests.
+opentelemetry-instrumentation-fastapi==0.50b0
+
+# OTLP exporter will later send traces to Dynatrace or an OpenTelemetry Collector.
+opentelemetry-exporter-otlp==1.29.0

@@ -1,0 +1,36 @@
+# k8s/configmap.yaml
+#
+# Purpose:
+# Provides non-sensitive runtime configuration for the ASR AI quality service.
+#
+# This ConfigMap injects service identity, environment, model metadata,
+# audit behavior, and database readiness behavior into the container.
+#
+# Sensitive values such as passwords are not stored here.
+# They belong in Kubernetes Secrets or an external secret manager later.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: asr-ai-quality-service-config
+  namespace: ai-reliability-poc
+  labels:
+    app.kubernetes.io/name: asr-ai-quality-service
+    app.kubernetes.io/part-of: asr-ai-reliability
+    app.kubernetes.io/component: inference-api
+    environment: poc
+    owner: sre-platform-team
+data:
+  SERVICE_NAME: "asr-ai-quality-service"
+  ENVIRONMENT: "poc"
+  OWNER: "sre-platform-team"
+  MODEL_NAME: "asr-quality-classifier"
+  MODEL_VERSION: "v1.0.3"
+  ARTIFACT_LOADED: "true"
+  AUDIT_REQUIRED: "true"
+  AUDIT_LOG_PATH: "local/generated/audit/prediction_audit.jsonl"
+
+  # DB_CHECK_ENABLED remains false for the first Kubernetes deployment.
+  # We will turn this on after adding Kubernetes PostgreSQL connectivity.
+  DB_CHECK_ENABLED: "false"
+  OTEL_ENABLED: "true"

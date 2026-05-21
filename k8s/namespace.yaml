@@ -1,0 +1,17 @@
+# k8s/namespace.yaml
+#
+# Purpose:
+# Creates an isolated Kubernetes namespace for the ASR AI Reliability POC.
+#
+# Why this matters:
+# A dedicated namespace keeps the POC workloads, policies, service accounts,
+# network rules, and observability labels separate from other environments.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-reliability-poc
+  labels:
+    app.kubernetes.io/part-of: asr-ai-reliability
+    environment: poc
+    owner: sre-platform-team

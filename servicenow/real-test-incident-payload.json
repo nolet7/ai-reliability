@@ -1,0 +1,10 @@
+{
+  "short_description": "ASR AI Reliability POC test incident from automation",
+  "description": "This is a real test incident created from the ASR AI Reliability POC automation script.\n\nService: asr-ai-quality-service\nEnvironment: poc\nModel: asr-quality-classifier\nModel Version: v1.0.3\nSource: ServiceNow API test\n\nEvidence:\n- Kubernetes namespace: ai-reliability-poc\n- Dynatrace service: asr-ai-quality-service\n- LoadBalancer IP: 139.144.255.192\n\nPurpose:\nValidate that the POC can create ServiceNow incidents safely using the Table API.",
+  "impact": "2",
+  "urgency": "2",
+  "category": "inquiry",
+  "subcategory": "software",
+  "correlation_id": "asr-ai-reliability-poc-test-001",
+  "work_notes": "Created by ASR AI Reliability POC script after successful ServiceNow authentication test."
+}

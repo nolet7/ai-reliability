@@ -1,0 +1,44 @@
+# k8s/rbac.yaml
+#
+# Purpose:
+# Defines minimal RBAC for the ASR AI quality service.
+#
+# Why this matters:
+# The app does not need broad Kubernetes API permissions.
+# For this POC, we intentionally grant only read access to ConfigMaps in its namespace.
+#
+# Production note:
+# If the app does not need Kubernetes API access at all, remove this Role and RoleBinding.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: asr-ai-quality-service-role
+  namespace: ai-reliability-poc
+  labels:
+    app.kubernetes.io/name: asr-ai-quality-service
+    app.kubernetes.io/part-of: asr-ai-reliability
+    environment: poc
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: asr-ai-quality-service-rolebinding
+  namespace: ai-reliability-poc
+  labels:
+    app.kubernetes.io/name: asr-ai-quality-service
+    app.kubernetes.io/part-of: asr-ai-reliability
+    environment: poc
+subjects:
+  - kind: ServiceAccount
+    name: asr-ai-quality-service-sa
+    namespace: ai-reliability-poc
+roleRef:
+  kind: Role
+  name: asr-ai-quality-service-role
+  apiGroup: rbac.authorization.k8s.io

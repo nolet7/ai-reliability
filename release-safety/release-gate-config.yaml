@@ -1,0 +1,63 @@
+# release-safety/release-gate-config.yaml
+#
+# Purpose:
+# Defines release gates for the ASR AI Reliability Incident Automation POC.
+#
+# A release should not be trusted unless these checks pass.
+
+release_gate:
+  project: asr-ai-reliability-poc
+  service_name: asr-ai-quality-service
+  environment: poc
+  namespace: ai-reliability-poc
+  model_name: asr-quality-classifier
+  expected_model_version: v1.0.3
+
+  endpoints:
+    base_url: "http://139.144.255.192"
+    health_live: "/health/live"
+    health_ready: "/health/ready"
+    health_model: "/health/model"
+    version: "/version"
+    predict: "/predict"
+
+  kubernetes:
+    deployment: asr-ai-quality-service
+    expected_ready_replicas: 2
+    service: asr-ai-quality-service
+    service_type: LoadBalancer
+
+  istio:
+    enabled: true
+    ingress_ip: "139.144.255.92"
+    gateway: asr-ai-quality-gateway
+    destination_rule: asr-ai-quality-destination-rule
+    virtual_service: asr-ai-quality-virtual-service
+    stable_subset: v1
+    canary_subset: v2
+    rollback_expected_model_version: v1.0.3
+
+  atlas:
+    enabled: true
+    approved_schema: database/schema-atlas.sql
+    drift_script: scripts/run_atlas_drift_check.sh
+    expected_status: NO_DRIFT
+
+  observability:
+    dynatrace_enabled: true
+    otel_enabled_required: true
+    service_name: asr-ai-quality-service
+
+  required_gates:
+    - health_live_gate
+    - health_ready_gate
+    - model_readiness_gate
+    - prediction_audit_gate
+    - atlas_schema_drift_gate
+    - kubernetes_rollout_gate
+    - istio_rollback_gate
+
+  failure_action:
+    create_servicenow_incident: true
+    incident_payload: servicenow/sample-release-gate-incident-payload.json
+    rollback_script: scripts/apply_ai_rollback.sh

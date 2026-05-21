@@ -1,0 +1,32 @@
+# istio/virtual-service-rollback.yaml
+#
+# Purpose:
+# Routes 100% of traffic back to v1.
+#
+# This simulates a safe rollback after a canary issue is detected.
+
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: asr-ai-quality-virtual-service
+  namespace: ai-reliability-poc
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - asr-ai-quality-gateway
+  http:
+    - name: asr-ai-quality-rollback-to-v1
+      route:
+        - destination:
+            host: asr-ai-quality-service.ai-reliability-poc.svc.cluster.local
+            subset: v1
+            port:
+              number: 80
+          weight: 100
+        - destination:
+            host: asr-ai-quality-service.ai-reliability-poc.svc.cluster.local
+            subset: v2
+            port:
+              number: 80
+          weight: 0

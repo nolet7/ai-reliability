@@ -1,0 +1,30 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local generated runtime/evidence files
+local/generated/
+local/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Secrets and real credentials
+.env
+*.env
+k8s/dynatrace-otel-secret.yaml
+k8s/*real-secret*.yaml
+k8s/*actual-secret*.yaml
+servicenow/servicenow-env.sh
+servicenow/*real*.sh
+servicenow/*secret*.sh
+servicenow/*credential*.sh
+
+# Logs
+*.log

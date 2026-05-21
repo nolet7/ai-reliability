@@ -1,0 +1,37 @@
+# .dockerignore
+#
+# Purpose:
+# Prevent unnecessary local files from being copied into the Docker image.
+#
+# This keeps the image smaller, cleaner, and safer.
+
+# Git metadata should not be copied into the image.
+.git
+.gitignore
+
+# Local Python virtual environment should not be copied.
+.venv
+
+# Python cache files should not be copied.
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Local runtime-generated files should not be copied.
+local/generated
+local
+
+# OS/editor files should not be copied.
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# Test/cache folders should not be copied.
+.pytest_cache
+.mypy_cache
+
+# Documentation output files should not be copied.
+*.html
+*.pdf

@@ -1,0 +1,13 @@
+{
+  "short_description": "Dynatrace detected reliability issue on asr-ai-quality-service in poc",
+  "description": "Dynatrace detected a runtime reliability issue affecting the ASR AI quality service.\n\nService: asr-ai-quality-service\nEnvironment: poc\nModel: asr-quality-classifier\nModel Version: v1.0.3\nAffected Endpoint: POST /predict\nSymptom: Elevated latency, failed requests, or degraded throughput detected by Dynatrace.\n\nEvidence:\n- Dynatrace Service: asr-ai-quality-service\n- Kubernetes Namespace: ai-reliability-poc\n- Kubernetes Deployment: asr-ai-quality-service\n- LoadBalancer IP: 139.144.255.192\n- Trace ID: dynatrace-final-trace-example\n- Request ID: req-example\n\nRecommended Action:\nReview Dynatrace service evidence, inspect traces, check Kubernetes pod logs, validate model readiness, and follow the ASR AI service runbook.",
+  "assignment_group": "SRE Platform Operations",
+  "cmdb_ci": "ASR AI Quality Service",
+  "business_service": "ASR AI Reliability Platform",
+  "category": "Application Reliability",
+  "subcategory": "AI Inference Service",
+  "impact": "2",
+  "urgency": "2",
+  "correlation_id": "dynatrace-asr-ai-quality-service-poc-example",
+  "work_notes": "Generated from ASR AI Reliability POC Dynatrace evidence. Attach Dynatrace service URL, trace URL, dashboard URL, and Kubernetes logs during real incident creation."
+}

@@ -1,0 +1,105 @@
+# .github/workflows/release-gates.yml
+#
+# Purpose:
+# GitHub Actions release gate workflow for the ASR AI Reliability POC.
+#
+# This workflow validates:
+# - Python app syntax
+# - Python dependencies
+# - ServiceNow JSON payloads
+# - Bash script syntax
+# - Docker image build
+# - Release safety files
+#
+# Important:
+# This workflow does not deploy to Kubernetes yet.
+# Cluster-based gates will be added later after kubeconfig and registry secrets are configured.
+
+name: ASR AI Reliability Release Gates
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  release-gates:
+    name: Validate ASR AI Reliability POC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r app/requirements.txt
+
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile app/main.py
+
+      - name: Validate ServiceNow JSON payloads
+        run: |
+          python -m json.tool servicenow/sample-dynatrace-incident-payload.json >/dev/null
+          python -m json.tool servicenow/sample-atlas-drift-incident-payload.json >/dev/null
+          python -m json.tool servicenow/sample-release-gate-incident-payload.json >/dev/null
+          python -m json.tool servicenow/real-test-incident-payload.json >/dev/null || true
+          python -m json.tool servicenow/real-dynatrace-incident-payload.json >/dev/null || true
+
+      - name: Validate Bash script syntax
+        run: |
+          bash -n scripts/run_release_gates.sh
+          bash -n scripts/run_atlas_drift_check.sh
+          bash -n scripts/apply_ai_canary.sh
+          bash -n scripts/apply_ai_rollback.sh
+          bash -n scripts/validate_istio_traffic_split.sh
+          bash -n servicenow/create_incident_from_payload.sh
+          bash -n servicenow/test_servicenow_auth.sh
+
+      - name: Validate required release safety files
+        run: |
+          test -f release-safety/release-gate-config.yaml
+          test -f release-safety/evidence-template.md
+          test -f release-safety/rollback-checklist.md
+          test -f release-safety/release-gate-completion-summary.md
+
+      - name: Validate observability evidence files
+        run: |
+          test -f observability/opentelemetry-instrumentation.md
+          test -f observability/dynatrace-dql-queries.md
+          test -f observability/dynatrace-dashboard-design.md
+          test -f observability/dynatrace-tagging-strategy.md
+          test -f observability/slo-catalog.yaml
+
+      - name: Validate Kubernetes and Istio manifests exist
+        run: |
+          test -f k8s/deployment.yaml
+          test -f k8s/deployment-v2.yaml
+          test -f k8s/service.yaml
+          test -f k8s/configmap.yaml
+          test -f k8s/serviceaccount.yaml
+          test -f k8s/rbac.yaml
+          test -f istio/gateway.yaml
+          test -f istio/destination-rule.yaml
+          test -f istio/virtual-service-canary.yaml
+          test -f istio/virtual-service-rollback.yaml
+
+      - name: Build Docker image
+        run: |
+          docker build -t asr-ai-quality-service:ci -f app/Dockerfile .
+
+      - name: Release gate summary
+        run: |
+          echo "ASR AI Reliability release gate checks completed successfully."
+          echo "Validated app, payloads, scripts, Docker build, observability files, release-safety files, Kubernetes manifests, and Istio manifests."

@@ -1,0 +1,32 @@
+# istio/virtual-service-canary.yaml
+#
+# Purpose:
+# Routes 90% of traffic to v1 and 10% of traffic to v2.
+#
+# This is the first ASR AI reliability canary traffic split.
+
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: asr-ai-quality-virtual-service
+  namespace: ai-reliability-poc
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - asr-ai-quality-gateway
+  http:
+    - name: asr-ai-quality-canary-90-10
+      route:
+        - destination:
+            host: asr-ai-quality-service.ai-reliability-poc.svc.cluster.local
+            subset: v1
+            port:
+              number: 80
+          weight: 90
+        - destination:
+            host: asr-ai-quality-service.ai-reliability-poc.svc.cluster.local
+            subset: v2
+            port:
+              number: 80
+          weight: 10

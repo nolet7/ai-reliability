@@ -1,0 +1,93 @@
+# observability/slo-catalog.yaml
+#
+# Purpose:
+# Defines SLOs for the ASR AI Reliability Incident Automation POC.
+#
+# These SLOs will later support Dynatrace dashboards, release gates,
+# ServiceNow incident evidence, and RCA review.
+
+service:
+  name: asr-ai-quality-service
+  environment: poc
+  owner: sre-platform-team
+  model_name: asr-quality-classifier
+  model_version: v1.0.3
+
+slos:
+  - name: api-availability-slo
+    description: The /predict endpoint should return successful responses.
+    sli: successful_predict_requests / total_predict_requests
+    target: 99%
+    incident_trigger: error_rate_above_threshold
+    evidence:
+      - Dynatrace service problem
+      - HTTP status code
+      - Kubernetes pod logs
+      - ServiceNow incident
+
+  - name: api-latency-slo
+    description: The /predict endpoint should respond within the accepted latency target.
+    sli: p95_predict_latency
+    target: less_than_1_5_seconds
+    incident_trigger: p95_latency_above_1_5_seconds
+    evidence:
+      - Dynatrace latency chart
+      - Trace example
+      - Slow request logs
+      - ServiceNow incident
+
+  - name: model-readiness-slo
+    description: The AI model artifact must be loaded before traffic is allowed.
+    sli: health_model_artifact_loaded_true
+    target: 100%
+    incident_trigger: artifact_loaded_false
+    evidence:
+      - /health/model response
+      - model_name
+      - model_version
+      - Kubernetes readiness status
+
+  - name: prediction-audit-slo
+    description: Every auditable prediction must produce audit evidence.
+    sli: audit_logged_true_when_audit_required_true
+    target: 100%
+    incident_trigger: audit_required_true_but_audit_logged_false
+    evidence:
+      - request_id
+      - trace_id
+      - audit_required
+      - audit_logged
+      - ServiceNow incident
+
+  - name: schema-integrity-slo
+    description: Live PostgreSQL schema must match approved Git schema.
+    sli: atlas_schema_diff_clean
+    target: 100%
+    incident_trigger: atlas_schema_drift_detected
+    evidence:
+      - database/schema-atlas.sql
+      - Atlas diff output
+      - schema-drift-summary.txt
+      - ServiceNow drift payload
+
+  - name: kubernetes-readiness-slo
+    description: Desired pods should be running and ready.
+    sli: ready_pods / desired_pods
+    target: 99%
+    incident_trigger: pods_not_ready
+    evidence:
+      - kubectl rollout status
+      - pod status
+      - readiness probe result
+      - pod logs
+
+  - name: trace-coverage-slo
+    description: Prediction requests should include a trace ID for incident correlation.
+    sli: requests_with_trace_id / total_prediction_requests
+    target: 95%
+    incident_trigger: missing_trace_id_rate_above_threshold
+    evidence:
+      - trace_id
+      - request_id
+      - OpenTelemetry span attributes
+      - Dynatrace trace view

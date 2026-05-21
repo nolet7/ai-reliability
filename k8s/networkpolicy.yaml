@@ -1,0 +1,59 @@
+# k8s/networkpolicy.yaml
+#
+# Purpose:
+# Allows required ingress/egress for the ASR AI quality service.
+#
+# POC behavior:
+# - Allows external LoadBalancer traffic to app port 8000.
+# - Allows DNS egress.
+# - Allows PostgreSQL egress on 5432.
+# - Allows HTTPS egress on 443 for Dynatrace OTLP export.
+#
+# Production note:
+# In production, restrict 0.0.0.0/0 to approved egress firewall or Dynatrace/ActiveGate routes.
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: asr-ai-quality-service-network-policy
+  namespace: ai-reliability-poc
+  labels:
+    app.kubernetes.io/name: asr-ai-quality-service
+    app.kubernetes.io/part-of: asr-ai-reliability
+    environment: poc
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: asr-ai-quality-service
+
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    - ports:
+        - protocol: TCP
+          port: 5432
+
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
