@@ -41,6 +41,7 @@ ISTIO_INGRESS_IP="${ISTIO_INGRESS_IP:-139.144.255.92}"
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-http://${ISTIO_INGRESS_IP}}"
 
 ROUTE_TEST_PATH="${ROUTE_TEST_PATH:-/version}"
+MODEL_HEALTH_PATH="${MODEL_HEALTH_PATH:-/health/model}"
 VALIDATION_REQUESTS="${VALIDATION_REQUESTS:-30}"
 EXPECTED_PRIMARY_MODEL_VERSION="${EXPECTED_PRIMARY_MODEL_VERSION:-v1.0.3}"
 
@@ -133,6 +134,7 @@ cat > "$SUMMARY" <<EOF
 | Gateway | $ISTIO_GATEWAY_NAME |
 | Base URL | $BASE_URL |
 | Route Test Path | $ROUTE_TEST_PATH |
+| Model Health Path | $MODEL_HEALTH_PATH |
 | v1 Weight | $V1_WEIGHT |
 | v2 Weight | $V2_WEIGHT |
 | Validation Requests | $VALIDATION_REQUESTS |
@@ -280,6 +282,30 @@ if [[ "$HTTP_FAILURES" -eq 0 ]]; then
   record_gate "PASS" "Route HTTP validation" "0 HTTP failures out of $VALIDATION_REQUESTS"
 else
   record_gate "FAIL" "Route HTTP validation" "$HTTP_FAILURES HTTP failures out of $VALIDATION_REQUESTS"
+fi
+
+MODEL_HEALTH_OUTPUT="$RAW_DIR/model-health.json"
+MODEL_HEALTH_CODE="$(
+  curl -k -sS \
+    --connect-timeout 5 \
+    --max-time 20 \
+    -o "$MODEL_HEALTH_OUTPUT" \
+    -w "%{http_code}" \
+    "$BASE_URL$MODEL_HEALTH_PATH" || true
+)"
+
+MODEL_HEALTH_VERSION="$(extract_model_version "$MODEL_HEALTH_OUTPUT")"
+
+if [[ "$MODEL_HEALTH_CODE" =~ ^2 ]]; then
+  record_gate "PASS" "AI model health endpoint" "$MODEL_HEALTH_PATH returned HTTP $MODEL_HEALTH_CODE"
+else
+  record_gate "FAIL" "AI model health endpoint" "$MODEL_HEALTH_PATH returned HTTP $MODEL_HEALTH_CODE"
+fi
+
+if [[ "$MODEL_HEALTH_VERSION" == "$EXPECTED_PRIMARY_MODEL_VERSION" ]]; then
+  record_gate "PASS" "AI model version health" "$MODEL_HEALTH_PATH returned expected model version $EXPECTED_PRIMARY_MODEL_VERSION"
+else
+  record_gate "WARN" "AI model version health" "$MODEL_HEALTH_PATH returned model version '${MODEL_HEALTH_VERSION:-not-found}'; rollback validation still uses $ROUTE_TEST_PATH"
 fi
 
 if [[ "$MODE" == "rollback" ]]; then

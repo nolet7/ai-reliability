@@ -56,6 +56,7 @@ jobs:
       ISTIO_DESTINATION_RULE_NAME: ${{ vars.ISTIO_DESTINATION_RULE_NAME }}
 
       ROUTE_TEST_PATH: ${{ vars.ROUTE_TEST_PATH }}
+      MODEL_HEALTH_PATH: ${{ vars.MODEL_HEALTH_PATH }}
 
       CANARY_V1_WEIGHT: ${{ inputs.canary_v1_weight }}
       CANARY_V2_WEIGHT: ${{ inputs.canary_v2_weight }}
@@ -118,6 +119,10 @@ jobs:
 
           if [ -z "${ROUTE_TEST_PATH:-}" ]; then
             echo "ROUTE_TEST_PATH=/version" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${MODEL_HEALTH_PATH:-}" ]; then
+            echo "MODEL_HEALTH_PATH=/health/model" >> "$GITHUB_ENV"
           fi
 
           if [ -z "${CANARY_TOLERANCE_PERCENT:-}" ]; then
