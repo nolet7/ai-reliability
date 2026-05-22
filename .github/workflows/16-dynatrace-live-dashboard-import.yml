@@ -1,0 +1,83 @@
+name: 16 - Dynatrace Live Dashboard Import
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable_create:
+        description: "Attempt live dashboard creation in Dynatrace"
+        required: false
+        default: "true"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  dynatrace-live-dashboard-import:
+    name: Import live Dynatrace dashboard
+    runs-on: ubuntu-latest
+
+    env:
+      DYNATRACE_ENV_URL: ${{ secrets.DYNATRACE_ENV_URL }}
+      DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
+
+      APP_NAME: ${{ vars.APP_NAME }}
+      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+
+      DYNATRACE_DASHBOARD_ENABLE_CREATE: ${{ inputs.enable_create }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Normalize variables
+        run: |
+          if [ -z "${APP_NAME:-}" ]; then
+            echo "APP_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ENVIRONMENT:-}" ]; then
+            echo "ENVIRONMENT=poc" >> "$GITHUB_ENV"
+          fi
+
+      - name: Validate Dynatrace secrets
+        run: |
+          if [ -z "${DYNATRACE_ENV_URL:-}" ]; then
+            echo "DYNATRACE_ENV_URL is missing."
+            exit 1
+          fi
+
+          if [ -z "${DYNATRACE_API_TOKEN:-}" ]; then
+            echo "DYNATRACE_API_TOKEN is missing."
+            exit 1
+          fi
+
+          echo "Dynatrace secrets are present."
+
+      - name: Generate dashboard source if missing
+        run: |
+          if [ ! -f dynatrace/dashboards/as-ai-reliability-slo-command-center.json ]; then
+            chmod +x scripts/observability/generate_dynatrace_slo_dashboard_automation.py
+            python3 scripts/observability/generate_dynatrace_slo_dashboard_automation.py
+          fi
+
+      - name: Import live Dynatrace dashboard
+        run: |
+          chmod +x scripts/observability/import_dynatrace_live_dashboard.py
+          python3 scripts/observability/import_dynatrace_live_dashboard.py
+
+      - name: Publish live dashboard import summary
+        if: always()
+        run: |
+          if [ -f reports/dynatrace-live-dashboard-import/dynatrace-live-dashboard-import-summary.md ]; then
+            cat reports/dynatrace-live-dashboard-import/dynatrace-live-dashboard-import-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Dynatrace live dashboard import summary was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload live dashboard import evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-16-dynatrace-live-dashboard-import
+          path: reports/dynatrace-live-dashboard-import/
