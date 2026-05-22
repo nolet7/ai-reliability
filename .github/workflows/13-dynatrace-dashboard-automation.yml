@@ -1,0 +1,93 @@
+name: 13 - Dynatrace Dashboard Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable_api_probe:
+        description: "Run Dynatrace API capability probe"
+        required: false
+        default: "true"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  dynatrace-dashboard-automation:
+    name: Generate Dynatrace executive dashboard as code
+    runs-on: ubuntu-latest
+
+    env:
+      DYNATRACE_ENV_URL: ${{ secrets.DYNATRACE_ENV_URL }}
+      DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
+
+      APP_NAME: ${{ vars.APP_NAME }}
+      SERVICE_NAME: ${{ vars.SERVICE_NAME }}
+      ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+      EXPECTED_MODEL_VERSION: ${{ vars.EXPECTED_MODEL_VERSION }}
+      PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+
+      DYNATRACE_ENABLE_DASHBOARD_API_PROBE: ${{ inputs.enable_api_probe }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Normalize dashboard automation variables
+        run: |
+          if [ -z "${APP_NAME:-}" ]; then
+            echo "APP_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${SERVICE_NAME:-}" ]; then
+            echo "SERVICE_NAME=as-ai-quality-service" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${ENVIRONMENT:-}" ]; then
+            echo "ENVIRONMENT=poc" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${EXPECTED_MODEL_VERSION:-}" ]; then
+            echo "EXPECTED_MODEL_VERSION=v1.0.3" >> "$GITHUB_ENV"
+          fi
+
+          if [ -z "${PUBLIC_BASE_URL:-}" ]; then
+            echo "PUBLIC_BASE_URL=http://139.144.255.92" >> "$GITHUB_ENV"
+          fi
+
+      - name: Validate Dynatrace secrets
+        run: |
+          if [ -z "${DYNATRACE_ENV_URL:-}" ]; then
+            echo "DYNATRACE_ENV_URL is missing."
+            exit 1
+          fi
+
+          if [ -z "${DYNATRACE_API_TOKEN:-}" ]; then
+            echo "DYNATRACE_API_TOKEN is missing."
+            exit 1
+          fi
+
+          echo "Dynatrace secrets are present."
+
+      - name: Generate Dynatrace executive dashboard as code
+        run: |
+          chmod +x scripts/observability/generate_dynatrace_slo_dashboard_automation.py
+          python3 scripts/observability/generate_dynatrace_slo_dashboard_automation.py
+
+      - name: Publish dashboard automation summary
+        if: always()
+        run: |
+          if [ -f reports/dynatrace-dashboard-automation/dynatrace-dashboard-automation-summary.md ]; then
+            cat reports/dynatrace-dashboard-automation/dynatrace-dashboard-automation-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Dynatrace dashboard automation summary was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Dynatrace dashboard automation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-14-dynatrace-dashboard-automation
+          path: |
+            reports/dynatrace-dashboard-automation/
+            dynatrace/dashboards/
