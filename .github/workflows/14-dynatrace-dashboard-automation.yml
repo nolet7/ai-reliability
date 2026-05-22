@@ -1,4 +1,4 @@
-name: 13 - Dynatrace Dashboard Automation
+name: 14 - Dynatrace Dashboard Automation
 
 on:
   workflow_dispatch:
