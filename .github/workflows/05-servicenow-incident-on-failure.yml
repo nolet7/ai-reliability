@@ -21,6 +21,7 @@ on:
       - "03 - Runtime Release Gate"
       - "04 - Dynatrace Validation Gate"
       - "06 - Canary Rollback Automation"
+      - "15 - SLO Breach Simulation and Incident Proof"
     types:
       - completed
 
